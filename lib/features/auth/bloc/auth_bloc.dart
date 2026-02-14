@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import '../../../core/models/user_model.dart';
+import '../../../core/models/user_role.dart';
 import '../../../core/services/api_service.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -31,9 +33,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       await apiService.login(event.email, event.password);
       final user = await apiService.getCurrentUser();
-      emit(AuthAuthenticated(user: user));
+      _emitAuthenticated(user, emit);
     } catch (e) {
       emit(AuthError(message: e.toString()));
+    }
+  }
+
+  void _emitAuthenticated(UserModel user, Emitter<AuthState> emit) {
+    if (user.role == UserRole.patient && !user.hasCompletedOnboarding) {
+      emit(AuthOnboardingRequired(user: user));
+    } else {
+      emit(AuthAuthenticated(user: user));
     }
   }
   
@@ -51,7 +61,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         age: event.age,
         dateNaissance: event.dateNaissance,
         sobrietyDate: event.sobrietyDate,
-        addiction: event.addiction.value,
+        addiction: event.addiction?.value,
         imagePath: event.imagePath,
       );
       // Emit OTP sent state with registration data
@@ -65,8 +75,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           'prenom': event.prenom,
           'age': event.age,
           'dateNaissance': event.dateNaissance.toIso8601String().split('T')[0],
-          'sobrietyDate': event.sobrietyDate.toIso8601String().split('T')[0],
-          'addiction': event.addiction.value,
+          'sobrietyDate': event.sobrietyDate?.toIso8601String().split('T')[0],
+          'addiction': event.addiction?.value,
         },
         imagePath: event.imagePath,
       ));
@@ -148,7 +158,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoading());
     try {
       final user = await apiService.getCurrentUser();
-      emit(AuthAuthenticated(user: user));
+      _emitAuthenticated(user, emit);
     } catch (e) {
       emit(const AuthUnauthenticated());
     }
@@ -239,7 +249,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         age: event.age,
         imagePath: event.imagePath,
       );
-      emit(AuthAuthenticated(user: user));
+      _emitAuthenticated(user, emit);
     } catch (e) {
       emit(AuthError(message: e.toString()));
     }
@@ -293,7 +303,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         imagePath: event.imagePath,
       );
       final user = await apiService.getCurrentUser();
-      emit(AuthAuthenticated(user: user));
+      _emitAuthenticated(user, emit);
     } catch (e) {
       emit(AuthError(message: e.toString()));
     }

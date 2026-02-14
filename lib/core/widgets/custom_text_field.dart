@@ -10,6 +10,7 @@ class CustomTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final Widget? suffixIcon;
   final bool enabled;
+  final bool readOnly;
   
   const CustomTextField({
     super.key,
@@ -21,6 +22,7 @@ class CustomTextField extends StatelessWidget {
     this.validator,
     this.suffixIcon,
     this.enabled = true,
+    this.readOnly = false,
   });
   
   @override
@@ -32,7 +34,7 @@ class CustomTextField extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 14.sp,
-            color: Colors.white.withValues(alpha: 0.9),
+            color: AppColors.getPremiumTextSecondary(context).withOpacity(0.9),
             fontWeight: FontWeight.normal,
             fontFamily: 'sans-serif',
           ),
@@ -41,10 +43,10 @@ class CustomTextField extends StatelessWidget {
         Container(
           height: 50.h,
           decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E),
+            color: AppColors.getGlassColor(context).withOpacity(0.05),
             borderRadius: BorderRadius.circular(25.r),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: AppColors.getGlassBorder(context),
               width: 1.w,
             ),
           ),
@@ -62,9 +64,10 @@ class CustomTextField extends StatelessWidget {
                       keyboardType: keyboardType,
                       validator: validator,
                       enabled: enabled,
+                      readOnly: readOnly,
                       style: TextStyle(
                         fontSize: 16.sp,
-                        color: Colors.white,
+                        color: AppColors.getPremiumText(context),
                         fontWeight: FontWeight.normal,
                         fontFamily: 'sans-serif',
                       ),
@@ -72,7 +75,7 @@ class CustomTextField extends StatelessWidget {
                         hintText: hint,
                         hintStyle: TextStyle(
                           fontSize: 16.sp,
-                          color: Colors.white.withValues(alpha: 0.5),
+                          color: AppColors.getPremiumTextSecondary(context).withOpacity(0.5),
                           fontWeight: FontWeight.normal,
                           fontFamily: 'sans-serif',
                         ),
@@ -88,7 +91,7 @@ class CustomTextField extends StatelessWidget {
                     ),
                   ),
                 ),
-                 suffixIcon ?? const SizedBox.shrink(),
+                if (suffixIcon != null) suffixIcon!,
               ],
             ),
           ),

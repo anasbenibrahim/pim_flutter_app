@@ -1,11 +1,12 @@
+import 'dart:ui';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/widgets/premium_widgets.dart';
 import '../../../core/widgets/custom_app_bar.dart';
-import '../../../core/widgets/custom_text_field.dart';
-import '../../../core/widgets/custom_button.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/user_role.dart';
 import '../../../core/theme/app_colors.dart';
@@ -39,7 +40,6 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
     _prenomController = TextEditingController();
     _ageController = TextEditingController();
     
-    // Get user from arguments
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       if (args != null && args['user'] != null) {
@@ -53,7 +53,6 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
 
   void _loadUserData() {
     if (_user == null) return;
-    
     _emailController.text = _user!.email;
     _nomController.text = _user!.nom;
     _prenomController.text = _user!.prenom;
@@ -61,9 +60,6 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
       _ageController.text = _user!.age.toString();
     }
     _imagePath = _user!.profileImageUrl;
-    
-    // For patients, we would need to load additional data from backend
-    // For now, we'll just show the basic fields
   }
 
   @override
@@ -75,541 +71,177 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
     super.dispose();
   }
 
-
   Widget _buildProfileImage() {
+    final baseUrl = ApiConstants.baseUrl.replaceAll('/api', '');
+    ImageProvider? imageProvider;
+
     if (_imagePath != null && _imagePath!.isNotEmpty) {
-      // Check if it's a network URL or local path
-      if (_imagePath!.startsWith('http') || _imagePath!.startsWith('/')) {
-        final baseUrl = ApiConstants.baseUrl.replaceAll('/api', '');
-        final imageUrl = _imagePath!.startsWith('http')
-            ? _imagePath!
-            : '$baseUrl$_imagePath';
-        
-        return CircleAvatar(
-          radius: 60.r,
-          backgroundColor: AppColors.primaryPurple.withValues(alpha: 0.2),
-          backgroundImage: NetworkImage(imageUrl),
-          onBackgroundImageError: (exception, stackTrace) {
-            // Handle error
-          },
-        );
+      if (_imagePath!.startsWith('http') || _imagePath!.startsWith('/api')) {
+        final imageUrl = _imagePath!.startsWith('http') ? _imagePath! : '$baseUrl$_imagePath';
+        imageProvider = NetworkImage(imageUrl);
       } else {
-        // Local file path
-        return CircleAvatar(
-          radius: 60.r,
-          backgroundColor: AppColors.primaryPurple.withValues(alpha: 0.2),
-          backgroundImage: Image.asset(_imagePath!).image,
-        );
+        // Assume local path if it's from image picker
+        imageProvider = FileImage(File(_imagePath!));
       }
     }
-    
-    return CircleAvatar(
-      radius: 60.r,
-      backgroundColor: AppColors.primaryPurple.withValues(alpha: 0.2),
-      child: Icon(
-        Icons.person,
-        size: 60.sp,
-        color: AppColors.primaryPurple,
+
+    return Center(
+      child: Stack(
+        children: [
+          Container(
+            padding: EdgeInsets.all(4.w),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.primaryPurple.withValues(alpha: 0.5), width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryPurple.withValues(alpha: 0.2),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: CircleAvatar(
+              radius: 65.r,
+              backgroundColor: AppColors.getGlassColor(context),
+              backgroundImage: imageProvider,
+              child: imageProvider == null 
+                  ? Icon(Icons.person_rounded, size: 65.sp, color: AppColors.primaryPurple)
+                  : null,
+            ),
+          ),
+          Positioned(
+            bottom: 5,
+            right: 5,
+            child: GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                padding: EdgeInsets.all(10.w),
+                decoration: const BoxDecoration(
+                  color: AppColors.primaryPurple,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.camera_alt_rounded, size: 20.sp, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await showModalBottomSheet<XFile>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => GlassCard(
+        borderRadius: 25.r,
+        padding: EdgeInsets.zero,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 12.h),
+            Container(width: 40.w, height: 4.h, decoration: BoxDecoration(color: AppColors.getPremiumTextSecondary(context).withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              child: Text('Choisir une photo', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: AppColors.getPremiumText(context))),
+            ),
+            ListTile(
+              leading: Icon(Icons.photo_library_rounded, color: AppColors.getPremiumTextSecondary(context)),
+              title: Text('Galerie', style: TextStyle(color: AppColors.getPremiumText(context))),
+              onTap: () async => Navigator.pop(context, await picker.pickImage(source: ImageSource.gallery)),
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt_rounded, color: AppColors.getPremiumTextSecondary(context)),
+              title: Text('Appareil photo', style: TextStyle(color: AppColors.getPremiumText(context))),
+              onTap: () async => Navigator.pop(context, await picker.pickImage(source: ImageSource.camera)),
+            ),
+            SizedBox(height: 24.h),
+          ],
+        ),
+      ),
+    );
+
+    if (image != null) {
+      setState(() {
+        _imagePath = image.path;
+      });
+    }
   }
 
   void _handleUpdateProfile() {
     if (_formKey.currentState!.validate()) {
       if (_user == null) return;
       
-      // Dispatch update patient profile event (without dateNaissance, sobrietyDate, addiction)
-      if (_user!.role == UserRole.patient) {
-        context.read<AuthBloc>().add(
-          UpdatePatientProfileEvent(
-            nom: _nomController.text.trim(),
-            prenom: _prenomController.text.trim(),
-            age: int.parse(_ageController.text.trim()),
-            imagePath: _imagePath,
-          ),
-        );
-      } else if (_user!.role == UserRole.volontaire) {
-        // Dispatch update volontaire profile event
-        context.read<AuthBloc>().add(
-          UpdateVolontaireProfileEvent(
-            nom: _nomController.text.trim(),
-            prenom: _prenomController.text.trim(),
-            age: int.parse(_ageController.text.trim()),
-            imagePath: _imagePath,
-          ),
-        );
-      } else if (_user!.role == UserRole.familyMember) {
-        // Dispatch update family member profile event
-        context.read<AuthBloc>().add(
-          UpdateFamilyMemberProfileEvent(
-            nom: _nomController.text.trim(),
-            prenom: _prenomController.text.trim(),
-            imagePath: _imagePath,
-          ),
-        );
-      }
+      final event = _user!.role == UserRole.patient
+          ? UpdatePatientProfileEvent(nom: _nomController.text.trim(), prenom: _prenomController.text.trim(), age: int.parse(_ageController.text.trim()), imagePath: _imagePath)
+          : _user!.role == UserRole.volontaire
+              ? UpdateVolontaireProfileEvent(nom: _nomController.text.trim(), prenom: _prenomController.text.trim(), age: int.parse(_ageController.text.trim()), imagePath: _imagePath)
+              : UpdateFamilyMemberProfileEvent(nom: _nomController.text.trim(), prenom: _prenomController.text.trim(), imagePath: _imagePath);
+
+      context.read<AuthBloc>().add(event);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_user == null) {
-      return Scaffold(
-        backgroundColor: AppColors.darkBackground,
-        appBar: const CustomAppBar(title: 'Update Profile'),
-        body: Center(
-          child: CircularProgressIndicator(color: AppColors.primaryPurple),
-        ),
-      );
+      return const PremiumScaffold(body: Center(child: CircularProgressIndicator(color: AppColors.primaryPurple)));
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.darkBackground,
-      appBar: const CustomAppBar(title: 'Update Profile'),
+    return PremiumScaffold(
+      appBar: CustomAppBar(
+        title: 'Modifier le profil',
+      ),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
-            Get.snackbar(
-              'Error',
-              state.message,
-              snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
-              margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              borderRadius: 8.r,
-              duration: const Duration(seconds: 3),
-            );
+            Get.snackbar('Erreur', state.message, backgroundColor: Colors.redAccent, colorText: Colors.white);
           } else if (state is AuthAuthenticated) {
-            Get.snackbar(
-              'Success',
-              'Profile updated successfully',
-              snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-              margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              borderRadius: 8.r,
-              duration: const Duration(seconds: 3),
-            );
+            Get.snackbar('Succès', 'Profil mis à jour avec succès', backgroundColor: Colors.green, colorText: Colors.white);
             Navigator.pop(context);
           }
         },
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 32.h),
-                // Profile Image
-                Center(
-                  child: Stack(
+                _buildProfileImage(),
+                SizedBox(height: 40.h),
+                GlassCard(
+                  child: Column(
                     children: [
-                      GestureDetector(
-                        onTap: () {
-                          // Show image picker modal
-                          showModalBottomSheet(
-                            context: context,
-                            backgroundColor: Colors.transparent,
-                            builder: (context) => Container(
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E1E1E),
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(25.r),
-                                  topRight: Radius.circular(25.r),
-                                ),
-                              ),
-                              child: SafeArea(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // Drag Handle
-                                    Container(
-                                      margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                                      width: 40.w,
-                                      height: 4.h,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.3),
-                                        borderRadius: BorderRadius.circular(2.r),
-                                      ),
-                                    ),
-                                    // Title
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
-                                      child: Text(
-                                        'Select Image Source',
-                                        style: TextStyle(
-                                          fontSize: 18.sp,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'sans-serif',
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 16.h),
-                                    // Gallery Option
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 24.w),
-                                      child: GestureDetector(
-                                        onTap: () async {
-                                          Navigator.pop(context);
-                                          final ImagePicker picker = ImagePicker();
-                                          final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-                                          if (image != null && mounted) {
-                                            setState(() {
-                                              _imagePath = image.path;
-                                            });
-                                          }
-                                        },
-                                        child: Container(
-                                          width: double.infinity,
-                                          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF121212),
-                                            borderRadius: BorderRadius.circular(25.r),
-                                            border: Border.all(
-                                              color: Colors.white.withValues(alpha: 0.2),
-                                              width: 1.w,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Container(
-                                                width: 48.w,
-                                                height: 48.h,
-                                                decoration: BoxDecoration(
-                                                  color: const Color(0xFF1E1E1E),
-                                                  borderRadius: BorderRadius.circular(12.r),
-                                                ),
-                                                child: Icon(
-                                                  Icons.photo_library,
-                                                  size: 28.sp,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                              SizedBox(width: 16.w),
-                                              Text(
-                                                'Gallery',
-                                                style: TextStyle(
-                                                  fontSize: 16.sp,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.normal,
-                                                  fontFamily: 'sans-serif',
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 16.h),
-                                    // Camera Option
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 24.w),
-                                      child: GestureDetector(
-                                        onTap: () async {
-                                          Navigator.pop(context);
-                                          final ImagePicker picker = ImagePicker();
-                                          final XFile? image = await picker.pickImage(source: ImageSource.camera);
-                                          if (image != null && mounted) {
-                                            setState(() {
-                                              _imagePath = image.path;
-                                            });
-                                          }
-                                        },
-                                        child: Container(
-                                          width: double.infinity,
-                                          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF121212),
-                                            borderRadius: BorderRadius.circular(25.r),
-                                            border: Border.all(
-                                              color: Colors.white.withValues(alpha: 0.2),
-                                              width: 1.w,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Container(
-                                                width: 48.w,
-                                                height: 48.h,
-                                                decoration: BoxDecoration(
-                                                  color: const Color(0xFF1E1E1E),
-                                                  borderRadius: BorderRadius.circular(12.r),
-                                                ),
-                                                child: Icon(
-                                                  Icons.photo_camera,
-                                                  size: 28.sp,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                              SizedBox(width: 16.w),
-                                              Text(
-                                                'Camera',
-                                                style: TextStyle(
-                                                  fontSize: 16.sp,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.normal,
-                                                  fontFamily: 'sans-serif',
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 24.h),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                        child: _buildProfileImage(),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: () {
-                            // Show image picker modal (same as above)
-                            showModalBottomSheet(
-                              context: context,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) => Container(
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1E1E1E),
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(25.r),
-                                    topRight: Radius.circular(25.r),
-                                  ),
-                                ),
-                                child: SafeArea(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                                        width: 40.w,
-                                        height: 4.h,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.3),
-                                          borderRadius: BorderRadius.circular(2.r),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
-                                        child: Text(
-                                          'Select Image Source',
-                                          style: TextStyle(
-                                            fontSize: 18.sp,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: 'sans-serif',
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(height: 16.h),
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 24.w),
-                                        child: GestureDetector(
-                                          onTap: () async {
-                                            Navigator.pop(context);
-                                            final ImagePicker picker = ImagePicker();
-                                            final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-                                            if (image != null && mounted) {
-                                              setState(() {
-                                                _imagePath = image.path;
-                                              });
-                                            }
-                                          },
-                                          child: Container(
-                                            width: double.infinity,
-                                            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF121212),
-                                              borderRadius: BorderRadius.circular(25.r),
-                                              border: Border.all(
-                                                color: Colors.white.withValues(alpha: 0.2),
-                                                width: 1.w,
-                                              ),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  width: 48.w,
-                                                  height: 48.h,
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(0xFF1E1E1E),
-                                                    borderRadius: BorderRadius.circular(12.r),
-                                                  ),
-                                                  child: Icon(
-                                                    Icons.photo_library,
-                                                    size: 28.sp,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                                SizedBox(width: 16.w),
-                                                Text(
-                                                  'Gallery',
-                                                  style: TextStyle(
-                                                    fontSize: 16.sp,
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.normal,
-                                                    fontFamily: 'sans-serif',
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(height: 16.h),
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 24.w),
-                                        child: GestureDetector(
-                                          onTap: () async {
-                                            Navigator.pop(context);
-                                            final ImagePicker picker = ImagePicker();
-                                            final XFile? image = await picker.pickImage(source: ImageSource.camera);
-                                            if (image != null && mounted) {
-                                              setState(() {
-                                                _imagePath = image.path;
-                                              });
-                                            }
-                                          },
-                                          child: Container(
-                                            width: double.infinity,
-                                            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF121212),
-                                              borderRadius: BorderRadius.circular(25.r),
-                                              border: Border.all(
-                                                color: Colors.white.withValues(alpha: 0.2),
-                                                width: 1.w,
-                                              ),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  width: 48.w,
-                                                  height: 48.h,
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(0xFF1E1E1E),
-                                                    borderRadius: BorderRadius.circular(12.r),
-                                                  ),
-                                                  child: Icon(
-                                                    Icons.photo_camera,
-                                                    size: 28.sp,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                                SizedBox(width: 16.w),
-                                                Text(
-                                                  'Camera',
-                                                  style: TextStyle(
-                                                    fontSize: 16.sp,
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.normal,
-                                                    fontFamily: 'sans-serif',
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(height: 24.h),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            padding: EdgeInsets.all(8.w),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryPurple,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.darkBackground,
-                                width: 2.w,
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.camera_alt,
-                              size: 20.sp,
-                              color: Colors.white,
-                            ),
+                      PremiumTextField(label: 'Email', hintText: '', controller: _emailController, prefixIcon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
+                      SizedBox(height: 20.h),
+                      PremiumTextField(label: 'Nom', hintText: 'Entrez votre nom', controller: _nomController, prefixIcon: Icons.person_outline_rounded, validator: (v) => v!.isEmpty ? 'Le nom est requis' : null),
+                      SizedBox(height: 20.h),
+                      PremiumTextField(label: 'Prénom', hintText: 'Entrez votre prénom', controller: _prenomController, prefixIcon: Icons.person_outline_rounded, validator: (v) => v!.isEmpty ? 'Le prénom est requis' : null),
+                      if (_user!.role != UserRole.familyMember) ...[
+                        SizedBox(height: 20.h),
+                        PremiumTextField(label: 'Âge', hintText: 'Entrez votre âge', controller: _ageController, prefixIcon: Icons.cake_outlined, keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'L\'âge est requis' : null),
+                      ],
+                      SizedBox(height: 32.h),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _handleUpdateProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryPurple,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 18.h),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                            elevation: 0,
                           ),
+                          child: Text('Enregistrer les modifications', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ],
                   ),
                 ),
                 SizedBox(height: 40.h),
-                // Email
-                CustomTextField(
-                  label: 'Email',
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  enabled: false, // Email cannot be changed
-                ),
-                SizedBox(height: 20.h),
-                // Nom
-                CustomTextField(
-                  label: 'Nom',
-                  controller: _nomController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Nom is required';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20.h),
-                // Prenom
-                CustomTextField(
-                  label: 'Prenom',
-                  controller: _prenomController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Prenom is required';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20.h),
-                // Age (for Patient and Volontaire)
-                if (_user!.role == UserRole.patient || _user!.role == UserRole.volontaire) ...[
-                  CustomTextField(
-                    label: 'Age',
-                    controller: _ageController,
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Age is required';
-                      }
-                      final age = int.tryParse(value);
-                      if (age == null || age < 1 || age > 150) {
-                        return 'Age must be between 1 and 150';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 20.h),
-                ],
-                // Update Button
-                BlocBuilder<AuthBloc, AuthState>(
-                  builder: (context, state) {
-                    return CustomButton(
-                      text: 'Update Profile',
-                      onPressed: state is AuthLoading ? null : _handleUpdateProfile,
-                      isLoading: state is AuthLoading,
-                    );
-                  },
-                ),
-                SizedBox(height: 32.h),
               ],
             ),
           ),

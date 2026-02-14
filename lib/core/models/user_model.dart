@@ -10,10 +10,13 @@ class UserModel {
   final String? profileImageUrl;
   final DateTime? createdAt;
   final String? referralCode; // Only for patients
+  final bool hasCompletedOnboarding;
   // Patient information for family members
   final int? patientId;
   final String? patientNom;
   final String? patientPrenom;
+  final String? addiction;
+  final DateTime? sobrietyDate;
   
   UserModel({
     required this.id,
@@ -25,9 +28,12 @@ class UserModel {
     this.profileImageUrl,
     this.createdAt,
     this.referralCode,
+    this.hasCompletedOnboarding = false,
     this.patientId,
     this.patientNom,
     this.patientPrenom,
+    this.addiction,
+    this.sobrietyDate,
   });
   
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -43,9 +49,14 @@ class UserModel {
           ? DateTime.parse(json['createdAt'] as String)
           : null,
       referralCode: json['referralCode'] as String?,
+      hasCompletedOnboarding: json['hasCompletedOnboarding'] as bool? ?? false,
       patientId: json['patientId'] as int?,
       patientNom: json['patientNom'] as String?,
       patientPrenom: json['patientPrenom'] as String?,
+      addiction: json['addiction'] as String?,
+      sobrietyDate: json['sobrietyDate'] != null 
+          ? DateTime.parse(json['sobrietyDate'] as String)
+          : null,
     );
   }
   
@@ -60,9 +71,12 @@ class UserModel {
       'profileImageUrl': profileImageUrl,
       'createdAt': createdAt?.toIso8601String(),
       'referralCode': referralCode,
+      'hasCompletedOnboarding': hasCompletedOnboarding,
       'patientId': patientId,
       'patientNom': patientNom,
       'patientPrenom': patientPrenom,
+      'addiction': addiction,
+      'sobrietyDate': sobrietyDate?.toIso8601String(),
     };
   }
 }

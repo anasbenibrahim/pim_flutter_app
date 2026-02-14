@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../../../core/widgets/custom_text_field.dart';
-import '../../../core/widgets/custom_button.dart';
-import '../../../core/widgets/custom_app_bar.dart';
+import '../../../core/widgets/premium_widgets.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/theme/app_colors.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -38,14 +37,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     if (_formKey.currentState!.validate()) {
       if (_newPasswordController.text != _confirmPasswordController.text) {
         Get.snackbar(
-          'Error',
-          'Passwords do not match',
+          'Erreur',
+          'Les mots de passe ne correspondent pas',
           snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.redAccent,
           colorText: Colors.white,
           margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          borderRadius: 8.r,
-          duration: const Duration(seconds: 3),
+          borderRadius: 12.r,
         );
         return;
       }
@@ -63,133 +61,158 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: const CustomAppBar(
-        title: 'Reset Password',
+    return PremiumScaffold(
+      appBar: CustomAppBar(
+        title: 'Réinitialisation',
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
             Get.snackbar(
-              'Error',
+              'Erreur',
               state.message,
               snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.red,
+              backgroundColor: Colors.redAccent,
               colorText: Colors.white,
               margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              borderRadius: 8.r,
-              duration: const Duration(seconds: 3),
+              borderRadius: 12.r,
             );
           } else if (state is PasswordResetSuccessState) {
             Get.snackbar(
-              'Success',
-              'Password reset successfully!',
+              'Succès',
+              'Mot de passe réinitialisé avec succès !',
               snackPosition: SnackPosition.TOP,
               backgroundColor: Colors.green,
               colorText: Colors.white,
               margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              borderRadius: 8.r,
-              duration: const Duration(seconds: 3),
+              borderRadius: 12.r,
             );
             Navigator.pushReplacementNamed(context, AppRoutes.login);
           }
         },
         builder: (context, state) {
-          return SafeArea(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 40.h),
-                    Text(
-                      'Create New Password',
+          return SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(height: 40.h),
+                  Container(
+                    padding: EdgeInsets.all(24.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryPurple.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.security_rounded,
+                      color: AppColors.primaryPurple,
+                      size: 64.sp,
+                    ),
+                  ),
+                  SizedBox(height: 32.h),
+                  Text(
+                    'Nouveau mot de passe',
+                    style: TextStyle(
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 12.h),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Text(
+                      'Veuillez créer un mot de passe fort pour sécuriser votre compte.',
                       style: TextStyle(
-                        fontSize: 24.sp,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'sans-serif',
+                        fontSize: 16.sp,
+                        color: Colors.white70,
+                        height: 1.5,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      'Enter your new password below',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontFamily: 'sans-serif',
-                      ),
-                    ),
-                    SizedBox(height: 32.h),
-                    // New Password Field
-                    CustomTextField(
-                      label: 'New Password',
-                      hint: 'Enter new password',
-                      controller: _newPasswordController,
-                      obscureText: _obscureNewPassword,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter new password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureNewPassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.white.withValues(alpha: 0.7),
-                          size: 20.sp,
+                  ),
+                  SizedBox(height: 48.h),
+                  GlassCard(
+                    child: Column(
+                      children: [
+                        PremiumTextField(
+                          label: 'Nouveau mot de passe',
+                          hintText: '••••••••',
+                          controller: _newPasswordController,
+                          obscureText: _obscureNewPassword,
+                          prefixIcon: Icons.lock_outline_rounded,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureNewPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                              color: Colors.white38,
+                              size: 20.sp,
+                            ),
+                            onPressed: () => setState(() => _obscureNewPassword = !_obscureNewPassword),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez entrer un mot de passe';
+                            }
+                            if (value.length < 6) {
+                              return 'Le mot de passe doit faire au moins 6 caractères';
+                            }
+                            return null;
+                          },
                         ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureNewPassword = !_obscureNewPassword;
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 20.h),
-                    // Confirm Password Field
-                    CustomTextField(
-                      label: 'Confirm Password',
-                      hint: 'Confirm new password',
-                      controller: _confirmPasswordController,
-                      obscureText: _obscureConfirmPassword,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please confirm your password';
-                        }
-                        if (value != _newPasswordController.text) {
-                          return 'Passwords do not match';
-                        }
-                        return null;
-                      },
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.white.withValues(alpha: 0.7),
-                          size: 20.sp,
+                        SizedBox(height: 20.h),
+                        PremiumTextField(
+                          label: 'Confirmer le mot de passe',
+                          hintText: '••••••••',
+                          controller: _confirmPasswordController,
+                          obscureText: _obscureConfirmPassword,
+                          prefixIcon: Icons.lock_outline_rounded,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                              color: Colors.white38,
+                              size: 20.sp,
+                            ),
+                            onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez confirmer votre mot de passe';
+                            }
+                            if (value != _newPasswordController.text) {
+                              return 'Les mots de passe ne correspondent pas';
+                            }
+                            return null;
+                          },
                         ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureConfirmPassword = !_obscureConfirmPassword;
-                          });
-                        },
-                      ),
+                        SizedBox(height: 32.h),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: state is AuthLoading ? null : _handleResetPassword,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryPurple,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(vertical: 18.h),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                              elevation: 0,
+                            ),
+                            child: state is AuthLoading
+                                ? SizedBox(
+                                    height: 20.h,
+                                    width: 20.h,
+                                    child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  )
+                                : Text('Réinitialiser', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 32.h),
-                    // Reset Password Button
-                    CustomButton(
-                      text: 'Reset Password',
-                      onPressed: state is AuthLoading ? null : _handleResetPassword,
-                      isLoading: state is AuthLoading,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           );

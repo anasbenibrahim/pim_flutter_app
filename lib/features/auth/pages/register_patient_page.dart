@@ -123,10 +123,9 @@ class _RegisterPatientPageState extends State<RegisterPatientPage> {
   
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: const CustomAppBar(
-        title: 'Register',
+    return PremiumScaffold(
+      appBar: CustomAppBar(
+        title: 'Inscription Patient',
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -271,8 +270,8 @@ class _RegisterPatientPageState extends State<RegisterPatientPage> {
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 color: _dateNaissance != null
-                                    ? Colors.white
-                                    : Colors.white.withValues(alpha: 0.5),
+                                    ? AppColors.getPremiumText(context)
+                                    : AppColors.getPremiumTextSecondary(context).withOpacity(0.5),
                                 fontWeight: FontWeight.normal,
                                 fontFamily: 'sans-serif',
                               ),
@@ -318,8 +317,8 @@ class _RegisterPatientPageState extends State<RegisterPatientPage> {
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 color: _sobrietyDate != null
-                                    ? Colors.white
-                                    : Colors.white.withValues(alpha: 0.5),
+                                    ? AppColors.getPremiumText(context)
+                                    : AppColors.getPremiumTextSecondary(context).withOpacity(0.5),
                                 fontWeight: FontWeight.normal,
                                 fontFamily: 'sans-serif',
                               ),

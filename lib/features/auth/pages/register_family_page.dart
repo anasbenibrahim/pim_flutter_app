@@ -3,10 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../core/widgets/image_picker_widget.dart';
-import '../../../core/widgets/custom_text_field.dart';
-import '../../../core/widgets/custom_button.dart';
-import '../../../core/widgets/custom_app_bar.dart';
+import '../../../core/widgets/premium_widgets.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/theme/app_colors.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -56,23 +55,21 @@ class _RegisterFamilyPageState extends State<RegisterFamilyPage> {
   
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: const CustomAppBar(
-        title: 'Register',
+    return PremiumScaffold(
+      appBar: CustomAppBar(
+        title: 'Inscription Famille',
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
             Get.snackbar(
-              'Error',
+              'Erreur',
               state.message,
               snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.red,
+              backgroundColor: Colors.redAccent,
               colorText: Colors.white,
               margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              borderRadius: 8.r,
-              duration: const Duration(seconds: 3),
+              borderRadius: 12.r,
             );
           } else if (state is RegistrationOtpSentState) {
             Navigator.pushReplacementNamed(
@@ -87,121 +84,154 @@ class _RegisterFamilyPageState extends State<RegisterFamilyPage> {
           }
         },
         builder: (context, state) {
-          return SafeArea(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 20.h),
-                    // Image Picker
-                    Center(
-                      child: ImagePickerWidget(
-                        onImageSelected: (path) {
-                          setState(() {
-                            _imagePath = path;
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 32.h),
-                    // Nom Field
-                    CustomTextField(
-                      label: 'Nom',
-                      hint: 'Enter your last name',
-                      controller: _nomController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your nom';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20.h),
-                    // Prenom Field
-                    CustomTextField(
-                      label: 'Prenom',
-                      hint: 'Enter your first name',
-                      controller: _prenomController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your prenom';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20.h),
-                    // Email Field
-                    CustomTextField(
-                      label: 'Email',
-                      hint: 'Enter your email address',
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20.h),
-                    // Referral Key Field
-                    CustomTextField(
-                      label: 'Referral Key',
-                      hint: 'Enter patient referral key',
-                      controller: _referralKeyController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter referral key';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20.h),
-                    // Password Field
-                    CustomTextField(
-                      label: 'Password',
-                      hint: 'Enter your password',
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.white.withValues(alpha: 0.7),
-                          size: 20.sp,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 32.h),
-                    // Register Button
-                    CustomButton(
-                      text: 'Register',
-                      onPressed: state is AuthLoading ? null : _handleRegister,
-                      isLoading: state is AuthLoading,
-                    ),
-                    SizedBox(height: 32.h),
-                  ],
+          return SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Soutenir un proche',
+                  style: TextStyle(
+                    fontSize: 28.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.getPremiumText(context),
+                    letterSpacing: -0.5,
+                  ),
                 ),
-              ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Accompagnez ceux qui vous sont chers dans leur parcours.',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    color: AppColors.getPremiumTextSecondary(context),
+                  ),
+                ),
+                SizedBox(height: 32.h),
+                Center(
+                  child: Stack(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(4.w),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.primaryPurple, width: 2),
+                        ),
+                        child: ImagePickerWidget(
+                          onImageSelected: (path) => setState(() => _imagePath = path),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: EdgeInsets.all(8.w),
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryPurple,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.camera_alt_rounded, color: Colors.white, size: 16.sp),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 32.h),
+                GlassCard(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: PremiumTextField(
+                                controller: _prenomController,
+                                label: 'Prénom',
+                                hintText: 'Jean',
+                                prefixIcon: Icons.person_outline_rounded,
+                                validator: (value) => (value == null || value.isEmpty) ? 'Requis' : null,
+                              ),
+                            ),
+                            SizedBox(width: 16.w),
+                            Expanded(
+                              child: PremiumTextField(
+                                controller: _nomController,
+                                label: 'Nom',
+                                hintText: 'Dupont',
+                                validator: (value) => (value == null || value.isEmpty) ? 'Requis' : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20.h),
+                        PremiumTextField(
+                          controller: _referralKeyController,
+                          label: 'Code de parrainage',
+                          hintText: 'Code du patient',
+                          prefixIcon: Icons.vpn_key_outlined,
+                          validator: (value) => (value == null || value.isEmpty) ? 'Code requis' : null,
+                        ),
+                        SizedBox(height: 20.h),
+                        PremiumTextField(
+                          controller: _emailController,
+                          label: 'Email',
+                          hintText: 'famille@email.com',
+                          prefixIcon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) return 'L\'email est requis';
+                            if (!value.contains('@')) return 'Email invalide';
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 20.h),
+                        PremiumTextField(
+                          controller: _passwordController,
+                          label: 'Mot de passe',
+                          hintText: '••••••••',
+                          prefixIcon: Icons.lock_outline_rounded,
+                          obscureText: _obscurePassword,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                              color: AppColors.getPremiumTextSecondary(context).withOpacity(0.5),
+                              size: 20.sp,
+                            ),
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) return 'Requis';
+                            if (value.length < 6) return 'Mini 6 caractères';
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 32.h),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: state is AuthLoading ? null : _handleRegister,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryPurple,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                              elevation: 0,
+                            ),
+                            child: state is AuthLoading
+                                ? SizedBox(
+                                    height: 20.h,
+                                    width: 20.h,
+                                    child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  )
+                                : Text('S\'inscrire', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+              ],
             ),
           );
         },

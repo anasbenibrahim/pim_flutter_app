@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 
 class ApiConstants {
   // Platform-aware base URL
@@ -15,10 +15,11 @@ class ApiConstants {
     }
     
     // Platform-specific URLs
-    if (Platform.isAndroid) {
-      // Android emulator uses 10.0.2.2 to access host machine's localhost
-      return 'http://10.0.2.2:8080/api';
-    } else if (Platform.isIOS) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      // Use your computer's local IP for physical devices and emulators
+      // 10.0.2.2 only works for emulators. 192.168.1.16 is your PC's IP.
+      return 'http://192.168.1.16:8080/api';
+    } else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
       // iOS simulator can use localhost
       return 'http://localhost:8080/api';
     } else {
@@ -47,4 +48,6 @@ class ApiConstants {
   static const String updatePatientProfile = '/auth/profile/patient';
   static const String updateVolontaireProfile = '/auth/profile/volontaire';
   static const String updateFamilyMemberProfile = '/auth/profile/family';
+  // Onboarding endpoints
+  static const String completeOnboarding = '/v1/onboarding/complete';
 }

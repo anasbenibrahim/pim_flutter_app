@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../../../core/widgets/image_picker_widget.dart';
 import '../../../core/widgets/premium_widgets.dart';
 import '../../../core/routes/app_routes.dart';
@@ -10,14 +11,14 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
-class RegisterVolontairePage extends StatefulWidget {
-  const RegisterVolontairePage({super.key});
+class RegisterPatientSimplePage extends StatefulWidget {
+  const RegisterPatientSimplePage({super.key});
   
   @override
-  State<RegisterVolontairePage> createState() => _RegisterVolontairePageState();
+  State<RegisterPatientSimplePage> createState() => _RegisterPatientSimplePageState();
 }
 
-class _RegisterVolontairePageState extends State<RegisterVolontairePage> {
+class _RegisterPatientSimplePageState extends State<RegisterPatientSimplePage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -25,6 +26,7 @@ class _RegisterVolontairePageState extends State<RegisterVolontairePage> {
   final _prenomController = TextEditingController();
   final _ageController = TextEditingController();
   
+  DateTime? _dateNaissance;
   String? _imagePath;
   bool _obscurePassword = true;
   
@@ -38,15 +40,66 @@ class _RegisterVolontairePageState extends State<RegisterVolontairePage> {
     super.dispose();
   }
   
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: AppColors.primaryPurple,
+              onPrimary: Colors.white,
+              surface: Color(0xFF1E1E1E),
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: const Color(0xFF0F001E),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _dateNaissance = picked;
+        final age = DateTime.now().year - picked.year;
+        if (DateTime.now().month < picked.month || 
+            (DateTime.now().month == picked.month && DateTime.now().day < picked.day)) {
+          _ageController.text = (age - 1).toString();
+        } else {
+          _ageController.text = age.toString();
+        }
+      });
+    }
+  }
+  
   void _handleRegister() {
     if (_formKey.currentState!.validate()) {
+      if (_dateNaissance == null) {
+        Get.snackbar(
+          'Erreur',
+          'Veuillez sélectionner votre date de naissance',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+          margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          borderRadius: 12.r,
+        );
+        return;
+      }
+      
       context.read<AuthBloc>().add(
-        RegisterVolontaireEvent(
+        RegisterPatientEvent(
           email: _emailController.text.trim(),
           password: _passwordController.text,
           nom: _nomController.text.trim(),
           prenom: _prenomController.text.trim(),
           age: int.parse(_ageController.text),
+          dateNaissance: _dateNaissance!,
+          sobrietyDate: null,
+          addiction: null,
           imagePath: _imagePath,
         ),
       );
@@ -57,7 +110,7 @@ class _RegisterVolontairePageState extends State<RegisterVolontairePage> {
   Widget build(BuildContext context) {
     return PremiumScaffold(
       appBar: CustomAppBar(
-        title: 'Inscription Volontaire',
+        title: 'Inscription Patient',
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -90,20 +143,20 @@ class _RegisterVolontairePageState extends State<RegisterVolontairePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Devenir Volontaire',
+                  'Créer votre compte',
                   style: TextStyle(
                     fontSize: 28.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.getPremiumText(context),
+                    color: Colors.white,
                     letterSpacing: -0.5,
                   ),
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  'Prêtez main forte et donnez de votre temps.',
+                  'Rejoignez notre communauté premium dès aujourd\'hui.',
                   style: TextStyle(
                     fontSize: 16.sp,
-                    color: AppColors.getPremiumTextSecondary(context),
+                    color: Colors.white70,
                   ),
                 ),
                 SizedBox(height: 32.h),
@@ -164,24 +217,48 @@ class _RegisterVolontairePageState extends State<RegisterVolontairePage> {
                           ],
                         ),
                         SizedBox(height: 20.h),
-                        PremiumTextField(
-                          controller: _ageController,
-                          label: 'Âge',
-                          hintText: '25',
-                          prefixIcon: Icons.calendar_today_rounded,
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) return 'Requis';
-                            final age = int.tryParse(value);
-                            if (age == null || age < 1 || age > 150) return 'Âge invalide';
-                            return null;
-                          },
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Date de Naissance',
+                              style: TextStyle(color: Colors.white70, fontSize: 14.sp, fontWeight: FontWeight.w500),
+                            ),
+                            SizedBox(height: 8.h),
+                            GestureDetector(
+                              onTap: () => _selectDate(context),
+                              child: Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(16.r),
+                                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.calendar_today_rounded, color: AppColors.primaryPurple, size: 20.sp),
+                                    SizedBox(width: 12.w),
+                                    Text(
+                                      _dateNaissance != null
+                                          ? DateFormat('dd/MM/yyyy').format(_dateNaissance!)
+                                          : 'Sélectionner',
+                                      style: TextStyle(
+                                        fontSize: 16.sp,
+                                        color: _dateNaissance != null ? Colors.white : Colors.white24,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         SizedBox(height: 20.h),
                         PremiumTextField(
                           controller: _emailController,
                           label: 'Email',
-                          hintText: 'jean.volontaire@email.com',
+                          hintText: 'jean.dupont@email.com',
                           prefixIcon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
@@ -200,7 +277,7 @@ class _RegisterVolontairePageState extends State<RegisterVolontairePage> {
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                              color: AppColors.getPremiumTextSecondary(context).withOpacity(0.5),
+                              color: Colors.white38,
                               size: 20.sp,
                             ),
                             onPressed: () => setState(() => _obscurePassword = !_obscurePassword),

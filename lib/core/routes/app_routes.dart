@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../features/auth/pages/get_started_page.dart';
 import '../../features/auth/pages/login_page.dart';
 import '../../features/auth/pages/role_selection_page.dart';
-import '../../features/auth/pages/register_patient_page.dart';
+import '../../features/auth/pages/register_patient_simple_page.dart';
 import '../../features/auth/pages/register_volontaire_page.dart';
 import '../../features/auth/pages/register_family_page.dart';
 import '../../features/auth/pages/forgot_password_page.dart';
@@ -13,6 +13,7 @@ import '../../features/home/pages/home_page.dart';
 import '../../features/profile/pages/profile_page.dart';
 import '../../features/profile/pages/update_profile_page.dart';
 import '../../features/navigation/pages/main_navigation_page.dart';
+import '../../features/onboarding/pages/onboarding_wrapper_page.dart';
 
 class AppRoutes {
   static const String getStarted = '/get-started';
@@ -29,6 +30,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String updateProfile = '/update-profile';
   static const String mainNavigation = '/main-navigation';
+  static const String onboarding = '/onboarding';
   
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -42,7 +44,7 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const RoleSelectionPage());
       
       case registerPatient:
-        return MaterialPageRoute(builder: (_) => const RegisterPatientPage());
+        return MaterialPageRoute(builder: (_) => const RegisterPatientSimplePage());
       
       case registerVolontaire:
         return MaterialPageRoute(builder: (_) => const RegisterVolontairePage());
@@ -92,6 +94,9 @@ class AppRoutes {
       
       case mainNavigation:
         return MaterialPageRoute(builder: (_) => const MainNavigationPage());
+
+      case onboarding:
+        return MaterialPageRoute(builder: (_) => const OnboardingWrapperPage());
       
       default:
         return MaterialPageRoute(

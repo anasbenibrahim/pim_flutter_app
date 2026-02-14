@@ -3,12 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../../../core/widgets/custom_app_bar.dart';
+import '../../../core/widgets/premium_widgets.dart';
 import '../../../core/widgets/menu_list_tile.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/models/user_role.dart';
+import '../../../core/controllers/theme_controller.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_event.dart';
 import '../../auth/bloc/auth_state.dart';
@@ -16,195 +17,28 @@ import '../../auth/bloc/auth_state.dart';
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
-  Widget _buildProfileImage(String? profileImageUrl) {
-    if (profileImageUrl == null || profileImageUrl.isEmpty) {
-      return CircleAvatar(
-        radius: 50.r,
-        backgroundColor: AppColors.primaryPurple.withValues(alpha: 0.2),
-        child: Icon(
-          Icons.person,
-          size: 50.sp,
-          color: AppColors.primaryPurple,
-        ),
-      );
-    }
-    
-    final baseUrl = ApiConstants.baseUrl.replaceAll('/api', '');
-    final imageUrl = profileImageUrl.startsWith('http')
-        ? profileImageUrl
-        : '$baseUrl$profileImageUrl';
-    
-    return CircleAvatar(
-      radius: 50.r,
-      backgroundColor: AppColors.primaryPurple.withValues(alpha: 0.2),
-      backgroundImage: NetworkImage(imageUrl),
-      onBackgroundImageError: (exception, stackTrace) {
-        // Handle error if image fails to load
-      },
-      child: profileImageUrl.isEmpty
-          ? Icon(
-              Icons.person,
-              size: 50.sp,
-              color: AppColors.primaryPurple,
-            )
-          : null,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.darkBackground,
-      appBar: const CustomAppBar(
-        title: 'Profile',
+    return PremiumScaffold(
+      appBar: CustomAppBar(
+        title: 'Profil',
         showBackButton: false,
       ),
       body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           if (state is AuthAuthenticated) {
             return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
               child: Column(
                 children: [
-                  SizedBox(height: 32.h),
-                  // Profile Image
-                  Center(
-                    child: _buildProfileImage(state.user.profileImageUrl),
-                  ),
-                  SizedBox(height: 24.h),
-                  // User Name
-                  Text(
-                    '${state.user.prenom} ${state.user.nom}',
-                    style: TextStyle(
-                      fontSize: 24.sp,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  // User Email
-                  Text(
-                    state.user.email,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: Colors.white.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  // Referral Code Section (for patients)
-                  if (state.user.role == UserRole.patient) ...[
-                    SizedBox(height: 32.h),
-                    Card(
-                      elevation: 2,
-                      color: AppColors.darkSurface,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        side: BorderSide(
-                          color: AppColors.primaryPurple.withValues(alpha: 0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(20.w),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.all(8.w),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryPurple.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(8.r),
-                                  ),
-                                  child: Icon(
-                                    Icons.share,
-                                    color: AppColors.primaryPurple,
-                                    size: 20.sp,
-                                  ),
-                                ),
-                                SizedBox(width: 12.w),
-                                Text(
-                                  'Your Referral Code',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18.sp,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 16.h),
-                            Container(
-                              width: double.infinity,
-                              padding: EdgeInsets.all(16.w),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryPurple.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8.r),
-                                border: Border.all(
-                                  color: AppColors.primaryPurple.withValues(alpha: 0.3),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      state.user.referralCode ?? 'Loading...',
-                                      style: TextStyle(
-                                        fontSize: 18.sp,
-                                        fontWeight: FontWeight.bold,
-                                        color: state.user.referralCode != null 
-                                            ? AppColors.primaryPurple 
-                                            : AppColors.darkTextSecondary,
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                  ),
-                                  if (state.user.referralCode != null)
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.copy,
-                                        color: AppColors.primaryPurple,
-                                        size: 20.sp,
-                                      ),
-                                      onPressed: () async {
-                                        await Clipboard.setData(
-                                          ClipboardData(text: state.user.referralCode!),
-                                        );
-                                        Get.snackbar(
-                                          'Success',
-                                          'Referral code copied!',
-                                          snackPosition: SnackPosition.TOP,
-                                          backgroundColor: AppColors.primaryPurple,
-                                          colorText: Colors.white,
-                                          margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                                          borderRadius: 8.r,
-                                          duration: const Duration(seconds: 3),
-                                        );
-                                      },
-                                    ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: 8.h),
-                            Text(
-                              'Share this code with your family members so they can join',
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                color: AppColors.darkTextSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                   SizedBox(height: 20.h),
+                  _buildProfileHeader(context, state.user.prenom, state.user.nom, state.user.email, state.user.profileImageUrl),
                   SizedBox(height: 40.h),
-                  // Menu Items
+                  
+                  const PremiumSectionTitle(title: 'Compte', icon: Icons.person_outline_rounded),
                   MenuListTile(
-                    icon: Icons.person_outline,
-                    title: 'Manage Profile',
-                    showArrow: false,
+                    icon: Icons.edit_note_rounded,
+                    title: 'Modifier le profil',
                     onTap: () {
                       Navigator.pushNamed(
                         context,
@@ -213,53 +47,102 @@ class ProfilePage extends StatelessWidget {
                       );
                     },
                   ),
-                  MenuListTile(
-                    icon: Icons.tune,
-                    title: 'Customize My Level',
-                    onTap: null, // Static, not clickable
+                  
+                  const PremiumSectionTitle(title: 'Préférences', icon: Icons.tune_rounded),
+                  Obx(() => MenuListTile(
+                    icon: Icons.dark_mode_outlined,
+                    title: 'Mode Sombre',
                     showArrow: false,
+                    trailing: Switch(
+                      value: Get.find<ThemeController>().isDarkMode,
+                      activeColor: AppColors.primaryPurple,
+                      onChanged: (val) => Get.find<ThemeController>().toggleTheme(),
+                    ),
+                  )),
+                  MenuListTile(
+                    icon: Icons.notifications_none_rounded,
+                    title: 'Notifications',
+                    onTap: null, // Prochainement
                   ),
+                  
+                  const PremiumSectionTitle(title: 'Assistance', icon: Icons.help_outline_rounded),
                   MenuListTile(
-                    icon: Icons.notifications_outlined,
-                    title: 'Manage Notification',
-                    onTap: null, // Static, not clickable
-                    showArrow: false,
+                    icon: Icons.info_outline_rounded,
+                    title: 'À propos',
+                    onTap: null, // Prochainement
                   ),
+                  
+                  SizedBox(height: 24.h),
                   MenuListTile(
-                    icon: Icons.help_outline,
-                    title: 'FAQ',
-                    onTap: null, // Static, not clickable
-                    showArrow: false,
-                  ),
-                  MenuListTile(
-                    icon: Icons.settings_outlined,
-                    title: 'Settings',
-                    onTap: null, // Static, not clickable
-                    showArrow: false,
-                  ),
-                  MenuListTile(
-                    icon: Icons.logout,
-                    title: 'Log Out',
-                    iconColor: Colors.red,
-                    showArrow: false,
+                    icon: Icons.logout_rounded,
+                    title: 'Déconnexion',
+                    iconColor: Colors.redAccent,
                     onTap: () {
                       context.read<AuthBloc>().add(const LogoutEvent());
                       Navigator.pushReplacementNamed(context, AppRoutes.getStarted);
                     },
                   ),
-                  SizedBox(height: 32.h),
+                  SizedBox(height: 50.h),
                 ],
               ),
             );
           } else {
-            return Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primaryPurple,
-              ),
-            );
+            return const Center(child: CircularProgressIndicator(color: AppColors.primaryPurple));
           }
         },
       ),
+    );
+  }
+
+  Widget _buildProfileHeader(BuildContext context, String prenom, String nom, String email, String? profileImageUrl) {
+    final baseUrl = ApiConstants.baseUrl.replaceAll('/api', '');
+    final imageUrl = profileImageUrl != null 
+        ? (profileImageUrl.startsWith('http') ? profileImageUrl : '$baseUrl$profileImageUrl')
+        : null;
+
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(4.w),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.primaryPurple.withValues(alpha: 0.5), width: 3),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryPurple.withValues(alpha: 0.15),
+                blurRadius: 30,
+                spreadRadius: 10,
+              ),
+            ],
+          ),
+          child: CircleAvatar(
+            radius: 60.r,
+            backgroundColor: AppColors.getGlassColor(context),
+            backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
+            child: imageUrl == null 
+                ? Icon(Icons.person_rounded, size: 60.sp, color: AppColors.primaryPurple)
+                : null,
+          ),
+        ),
+        SizedBox(height: 24.h),
+        Text(
+          '$prenom $nom',
+          style: TextStyle(
+            fontSize: 26.sp,
+            fontWeight: FontWeight.bold,
+            color: AppColors.getPremiumText(context),
+            letterSpacing: -0.5,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Text(
+          email,
+          style: TextStyle(
+            fontSize: 16.sp,
+            color: AppColors.getPremiumTextSecondary(context),
+          ),
+        ),
+      ],
     );
   }
 }

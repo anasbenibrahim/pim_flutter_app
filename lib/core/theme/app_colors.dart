@@ -23,6 +23,37 @@ class AppColors {
   static const Color success = Color(0xFF4CAF50);
   static const Color warning = Color(0xFFFF9800);
   
+  // Theme-aware tokens
+  static Color getGlassColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white.withOpacity(0.05)
+        : Colors.black.withOpacity(0.05);
+  }
+
+  static Color getGlassBorder(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white.withOpacity(0.1)
+        : Colors.black.withOpacity(0.1);
+  }
+
+  static Color getPremiumText(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : const Color(0xFF0F001E);
+  }
+
+  static Color getPremiumTextSecondary(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white70
+        : Colors.black54;
+  }
+
+  static Color getMeshBaseColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF0F001E)
+        : const Color(0xFFF8F4FF);
+  }
+
   // Get light theme
   static ThemeData getLightTheme() {
     return ThemeData(
@@ -31,54 +62,27 @@ class AppColors {
       primaryColor: primaryPurple,
       colorScheme: ColorScheme.light(
         primary: primaryPurple,
-        secondary: primaryPurple.withValues(alpha: 0.8),
+        secondary: buttonPurple,
         surface: lightSurface,
+        background: lightBackground,
         error: error,
         onPrimary: Colors.white,
-        onSecondary: Colors.white,
         onSurface: lightText,
-        onError: Colors.white,
       ),
       scaffoldBackgroundColor: lightBackground,
-      appBarTheme: AppBarTheme(
-        backgroundColor: primaryPurple,
-        foregroundColor: Colors.white,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Color(0xFF0F001E),
         elevation: 0,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: lightSurface,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryPurple, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: error),
-        ),
+        centerTitle: true,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryPurple,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 2,
-        ),
-      ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: primaryPurple,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 0,
         ),
       ),
     );
@@ -92,54 +96,27 @@ class AppColors {
       primaryColor: primaryPurple,
       colorScheme: ColorScheme.dark(
         primary: primaryPurple,
-        secondary: primaryPurple.withValues(alpha: 0.8),
+        secondary: buttonPurple,
         surface: darkSurface,
+        background: darkBackground,
         error: error,
         onPrimary: Colors.white,
-        onSecondary: Colors.white,
         onSurface: darkText,
-        onError: Colors.white,
       ),
       scaffoldBackgroundColor: darkBackground,
-      appBarTheme: AppBarTheme(
-        backgroundColor: darkSurface,
-        foregroundColor: darkText,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
         elevation: 0,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: darkSurface,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade700),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryPurple, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: error),
-        ),
+        centerTitle: true,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryPurple,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 2,
-        ),
-      ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: primaryPurple,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 0,
         ),
       ),
     );

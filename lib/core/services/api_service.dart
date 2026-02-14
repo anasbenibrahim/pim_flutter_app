@@ -68,8 +68,8 @@ class ApiService {
     required String prenom,
     required int age,
     required DateTime dateNaissance,
-    required DateTime sobrietyDate,
-    required String addiction,
+    DateTime? sobrietyDate,
+    String? addiction,
     String? imagePath,
   }) async {
     try {
@@ -86,7 +86,7 @@ class ApiService {
         'prenom': prenom,
         'age': age,
         'dateNaissance': dateNaissance.toIso8601String().split('T')[0],
-        'sobrietyDate': sobrietyDate.toIso8601String().split('T')[0],
+        'sobrietyDate': sobrietyDate?.toIso8601String().split('T')[0],
         'addiction': addiction,
       };
       
@@ -514,6 +514,58 @@ class ApiService {
       }
     } catch (e) {
       throw Exception('Profile update failed: ${e.toString()}');
+    }
+  }
+
+  Future<void> completeOnboarding({
+    required DateTime? sobrietyDate,
+    required String? substance,
+    required String? lifeRhythm,
+    required String? activityStatus,
+    required String? region,
+    List<String>? triggers,
+    List<String>? copingMechanisms,
+    List<String>? motivations,
+  }) async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+
+    print('DEBUG: Request URL: ${ApiConstants.baseUrl}${ApiConstants.completeOnboarding}');
+    print('DEBUG: Request Body: ${jsonEncode({
+      'sobrietyDate': sobrietyDate?.toIso8601String().split('T')[0],
+      'addiction': substance,
+      'lifeRhythm': lifeRhythm,
+      'activityStatus': activityStatus,
+      'region': region,
+      'triggers': triggers,
+      'copingMechanisms': copingMechanisms,
+      'motivations': motivations,
+    })}');
+
+    final response = await http.post(
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.completeOnboarding}'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $_accessToken',
+      },
+      body: jsonEncode({
+        'sobrietyDate': sobrietyDate?.toIso8601String().split('T')[0],
+        'addiction': substance,
+        'lifeRhythm': lifeRhythm,
+        'activityStatus': activityStatus,
+        'region': region,
+        'triggers': triggers,
+        'copingMechanisms': copingMechanisms,
+        'motivations': motivations,
+      }),
+    );
+
+    print('DEBUG: Response Status Code: ${response.statusCode}');
+    print('DEBUG: Response Body: ${response.body}');
+
+    if (response.statusCode != 200) {
+      final error = jsonDecode(response.body);
+      throw Exception(error['message'] ?? 'Failed to complete onboarding');
     }
   }
 }

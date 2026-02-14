@@ -25,8 +25,8 @@ class RegisterPatientEvent extends AuthEvent {
   final String prenom;
   final int age;
   final DateTime dateNaissance;
-  final DateTime sobrietyDate;
-  final AddictionType addiction;
+  final DateTime? sobrietyDate;
+  final AddictionType? addiction;
   final String? imagePath;
   
   const RegisterPatientEvent({
@@ -36,8 +36,8 @@ class RegisterPatientEvent extends AuthEvent {
     required this.prenom,
     required this.age,
     required this.dateNaissance,
-    required this.sobrietyDate,
-    required this.addiction,
+    this.sobrietyDate,
+    this.addiction,
     this.imagePath,
   });
   

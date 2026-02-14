@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../theme/app_colors.dart';
 
 class CustomDropdownField<T> extends StatelessWidget {
   final String label;
@@ -30,7 +31,7 @@ class CustomDropdownField<T> extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 14.sp,
-            color: Colors.white.withValues(alpha: 0.9),
+            color: AppColors.getPremiumTextSecondary(context).withOpacity(0.9),
             fontWeight: FontWeight.normal,
             fontFamily: 'sans-serif',
           ),
@@ -39,10 +40,10 @@ class CustomDropdownField<T> extends StatelessWidget {
         Container(
           height: 50.h,
           decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E),
+            color: AppColors.getGlassColor(context).withOpacity(0.05),
             borderRadius: BorderRadius.circular(25.r),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: AppColors.getGlassBorder(context),
               width: 1.w,
             ),
           ),
@@ -52,10 +53,12 @@ class CustomDropdownField<T> extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: DropdownButtonFormField<T>(
                 initialValue: value,
-                dropdownColor: const Color(0xFF1E1E1E),
+                dropdownColor: Theme.of(context).brightness == Brightness.dark 
+                    ? const Color(0xFF1E1E1E) 
+                    : Colors.white,
                 style: TextStyle(
                   fontSize: 16.sp,
-                  color: Colors.white,
+                  color: AppColors.getPremiumText(context),
                   fontWeight: FontWeight.normal,
                   fontFamily: 'sans-serif',
                 ),
@@ -63,7 +66,7 @@ class CustomDropdownField<T> extends StatelessWidget {
                   hintText: hint,
                   hintStyle: TextStyle(
                     fontSize: 16.sp,
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: AppColors.getPremiumTextSecondary(context).withOpacity(0.5),
                     fontWeight: FontWeight.normal,
                     fontFamily: 'sans-serif',
                   ),
@@ -78,7 +81,7 @@ class CustomDropdownField<T> extends StatelessWidget {
                 ),
                 icon: Icon(
                   Icons.arrow_drop_down,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: AppColors.getPremiumTextSecondary(context).withOpacity(0.7),
                   size: 24.sp,
                 ),
                 items: items,
