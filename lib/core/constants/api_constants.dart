@@ -47,4 +47,8 @@ class ApiConstants {
   static const String updatePatientProfile = '/auth/profile/patient';
   static const String updateVolontaireProfile = '/auth/profile/volontaire';
   static const String updateFamilyMemberProfile = '/auth/profile/family';
+  
+  // Objectifs (patient tracking) endpoints
+  static const String objectifs = '/objectifs';
+  static const String weeklyAchievement = '/objectifs/achievement/weekly';
 }

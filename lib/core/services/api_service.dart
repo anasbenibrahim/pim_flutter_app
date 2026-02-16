@@ -5,6 +5,9 @@ import '../constants/api_constants.dart';
 import '../models/auth_response.dart';
 import '../models/user_model.dart';
 import '../models/user_role.dart';
+import '../models/objectif_model.dart';
+import '../models/mood_type.dart';
+import '../models/weekly_achievement_model.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -514,6 +517,101 @@ class ApiService {
       }
     } catch (e) {
       throw Exception('Profile update failed: ${e.toString()}');
+    }
+  }
+
+  // Objectifs (patient objective tracking)
+  Future<List<ObjectifModel>> getObjectifs() async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+    
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.objectifs}'),
+      headers: {
+        'Authorization': 'Bearer $_accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+    
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body) as List<dynamic>;
+      return data.map((e) => ObjectifModel.fromJson(e as Map<String, dynamic>)).toList();
+    } else {
+      final error = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(error['message'] ?? 'Failed to load objectifs');
+    }
+  }
+
+  Future<ObjectifModel> createObjectif({
+    required DateTime objectifDate,
+    required MoodType mood,
+    required bool consumed,
+    String? notes,
+  }) async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+    
+    final response = await http.post(
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.objectifs}'),
+      headers: {
+        'Authorization': 'Bearer $_accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'objectifDate': objectifDate.toIso8601String().split('T')[0],
+        'mood': mood.name.toUpperCase(),
+        'consumed': consumed,
+        'notes': notes,
+      }),
+    );
+    
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return ObjectifModel.fromJson(data);
+    } else {
+      final error = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(error['message'] ?? 'Failed to create objectif');
+    }
+  }
+
+  Future<void> deleteObjectif(int id) async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+    
+    final response = await http.delete(
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.objectifs}/$id'),
+      headers: {'Authorization': 'Bearer $_accessToken'},
+    );
+    
+    if (response.statusCode != 200) {
+      final error = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(error['message'] ?? 'Failed to delete objectif');
+    }
+  }
+
+  Future<WeeklyAchievementModel> getWeeklyAchievement({String? weekStart}) async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+
+    var uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.weeklyAchievement}');
+    if (weekStart != null) {
+      uri = uri.replace(queryParameters: {'weekStart': weekStart});
+    }
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Authorization': 'Bearer $_accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return WeeklyAchievementModel.fromJson(data);
+    } else {
+      final error = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(error['message'] ?? 'Failed to load achievement');
     }
   }
 }

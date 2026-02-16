@@ -9,7 +9,7 @@ class RoleSelectionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-          backgroundColor: const Color(0xFF121212),
+          backgroundColor: Colors.white,
           appBar: const CustomAppBar(
             title: 'Select Your Role',
           ),
@@ -69,31 +69,29 @@ class RoleSelectionPage extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E),
-          borderRadius: BorderRadius.circular(25.r),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 1.w,
+            color: Colors.grey.shade200,
+            width: 1,
           ),
         ),
         child: Row(
           children: [
-            // Icon Container
             Container(
               width: 56.w,
               height: 56.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF121212),
-                borderRadius: BorderRadius.circular(16.r),
+                color: const Color(0xFF593A84).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
                 icon,
                 size: 32.sp,
-                color: const Color(0xFF6B45F1),
+                color: const Color(0xFF593A84),
               ),
             ),
             SizedBox(width: 20.w),
-            // Text Content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +101,7 @@ class RoleSelectionPage extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18.sp,
-                      color: Colors.white,
+                      color: const Color(0xFF333333),
                       fontFamily: 'sans-serif',
                     ),
                   ),
@@ -111,7 +109,7 @@ class RoleSelectionPage extends StatelessWidget {
                   Text(
                     description,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: const Color(0xFF666666),
                       fontSize: 14.sp,
                       fontFamily: 'sans-serif',
                     ),
@@ -124,7 +122,7 @@ class RoleSelectionPage extends StatelessWidget {
             Icon(
               Icons.chevron_right,
               size: 24.sp,
-              color: const Color(0xFF6B45F1),
+              color: const Color(0xFF593A84),
             ),
           ],
         ),

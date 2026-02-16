@@ -40,10 +40,9 @@ class SocialLoginButton extends StatelessWidget {
       return Icon(
         iconData,
         size: 24.sp,
-        color: Colors.white,
+        color: const Color(0xFF333333),
       );
     }
-    // Default icons based on text
     IconData defaultIcon = Icons.login;
     if (text.toLowerCase().contains('google')) {
       defaultIcon = Icons.g_mobiledata;
@@ -55,7 +54,7 @@ class SocialLoginButton extends StatelessWidget {
     return Icon(
       defaultIcon,
       size: 24.sp,
-      color: Colors.white,
+      color: const Color(0xFF333333),
     );
   }
 
@@ -67,12 +66,15 @@ class SocialLoginButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isStatic ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1E1E1E),
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF333333),
+          disabledBackgroundColor: Colors.white,
+          disabledForegroundColor: const Color(0xFF333333),
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25.r),
+            borderRadius: BorderRadius.circular(12.r),
             side: BorderSide(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: Colors.grey.shade300,
               width: 1,
             ),
           ),
@@ -86,8 +88,8 @@ class SocialLoginButton extends StatelessWidget {
               text,
               style: TextStyle(
                 fontSize: 16.sp,
-                color: Colors.white,
-                fontWeight: FontWeight.normal,
+                color: const Color(0xFF333333),
+                fontWeight: FontWeight.w500,
                 fontFamily: 'sans-serif',
               ),
             ),

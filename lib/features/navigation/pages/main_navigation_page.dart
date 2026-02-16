@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/models/user_role.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../home/pages/home_page.dart';
 import '../../profile/pages/profile_page.dart';
+import '../../objectifs/pages/objectifs_list_page.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart';
 
@@ -20,16 +22,25 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   int _currentIndex = 0;
   int? _previousIndex;
 
-  List<Widget> get _pages => [
-    const HomePage(key: ValueKey('home')),
-    const ProfilePage(key: ValueKey('profile')),
-  ];
+  List<Widget> _getPages(bool isPatient) {
+    if (isPatient) {
+      return [
+        const HomePage(key: ValueKey('home')),
+        const ObjectifsListPage(key: ValueKey('objectifs')),
+        const ProfilePage(key: ValueKey('profile')),
+      ];
+    }
+    return [
+      const HomePage(key: ValueKey('home')),
+      const ProfilePage(key: ValueKey('profile')),
+    ];
+  }
 
   Widget _buildHomeTab(bool isActive) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: isActive ? AppColors.primaryPurple.withValues(alpha: 0.1) : Colors.transparent,
+        color: isActive ? AppColors.primaryPurple.withValues(alpha: 0.12) : Colors.transparent,
         borderRadius: BorderRadius.circular(18.r),
         border: isActive
             ? Border.all(
@@ -41,10 +52,18 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.home,
-            size: 18.sp,
-            color: isActive ? AppColors.primaryPurple : Colors.white.withValues(alpha: 0.6),
+          ClipOval(
+            child: Image.asset(
+              'assets/images/home.png',
+              width: 18.w,
+              height: 18.h,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Icon(
+                Icons.home,
+                size: 18.sp,
+                color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
+              ),
+            ),
           ),
           SizedBox(width: 5.w),
           Text(
@@ -52,7 +71,50 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             style: TextStyle(
               fontSize: 13.sp,
               fontWeight: FontWeight.w500,
-              color: isActive ? AppColors.primaryPurple : Colors.white.withValues(alpha: 0.6),
+              color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildObjectifsTab(bool isActive) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: isActive ? AppColors.primaryPurple.withValues(alpha: 0.12) : Colors.transparent,
+        borderRadius: BorderRadius.circular(18.r),
+        border: isActive
+            ? Border.all(
+                color: AppColors.primaryPurple.withValues(alpha: 0.3),
+                width: 1,
+              )
+            : null,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClipOval(
+            child: Image.asset(
+              'assets/images/track.png',
+              width: 18.w,
+              height: 18.h,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Icon(
+                Icons.flag,
+                size: 18.sp,
+                color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
+              ),
+            ),
+          ),
+          SizedBox(width: 5.w),
+          Text(
+            'Tracks',
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+              color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
             ),
           ),
         ],
@@ -66,7 +128,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: isActive ? AppColors.primaryPurple.withValues(alpha: 0.1) : Colors.transparent,
+        color: isActive ? AppColors.primaryPurple.withValues(alpha: 0.12) : Colors.transparent,
         borderRadius: BorderRadius.circular(18.r),
         border: isActive
             ? Border.all(
@@ -99,7 +161,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                     child: Icon(
                       Icons.person,
                       size: 10.sp,
-                      color: isActive ? AppColors.primaryPurple : Colors.white.withValues(alpha: 0.6),
+                      color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
                     ),
                   );
                 },
@@ -116,7 +178,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               child: Icon(
                 Icons.person,
                 size: 10.sp,
-                color: isActive ? AppColors.primaryPurple : Colors.white.withValues(alpha: 0.6),
+                color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
               ),
             ),
           SizedBox(width: 5.w),
@@ -126,7 +188,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             style: TextStyle(
               fontSize: 13.sp,
               fontWeight: FontWeight.w500,
-              color: isActive ? AppColors.primaryPurple : Colors.white.withValues(alpha: 0.6),
+              color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
             ),
           ),
         ],
@@ -139,17 +201,24 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         String? profileImageUrl;
+        final isPatient = state is AuthAuthenticated &&
+            state.user.role == UserRole.patient;
         if (state is AuthAuthenticated) {
           profileImageUrl = state.user.profileImageUrl;
         }
 
-        return Scaffold(
-          body: AnimatedSwitcher(
+        final pages = _getPages(isPatient);
+        final profileIndex = isPatient ? 2 : 1;
+
+        return PopScope(
+          canPop: false,
+          child: Scaffold(
+            backgroundColor: AppColors.lightBackground,
+            body: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             switchInCurve: Curves.easeInOutCubic,
             switchOutCurve: Curves.easeInOutCubic,
             transitionBuilder: (Widget child, Animation<double> animation) {
-              // Determine slide direction based on navigation direction
               final isForward = _currentIndex > (_previousIndex ?? 0);
               return SlideTransition(
                 position: Tween<Offset>(
@@ -165,15 +234,17 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 ),
               );
             },
-            child: _pages[_currentIndex],
+            child: _currentIndex < pages.length
+                ? pages[_currentIndex]
+                : pages[0],
           ),
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
-              color: AppColors.darkSurface,
+              color: Colors.white,
               boxShadow: [
                 BoxShadow(
                   blurRadius: 20,
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Colors.black.withValues(alpha: 0.08),
                 ),
               ],
             ),
@@ -182,23 +253,33 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 2.h),
                 child: GNav(
                   backgroundColor: Colors.transparent,
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: AppColors.lightTextSecondary,
                   activeColor: AppColors.primaryPurple,
                   tabBackgroundColor: Colors.transparent,
                   gap: 8.w,
                   padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   tabs: [
                     GButton(
-                      icon: Icons.home, // Required but will be hidden by leading
+                      icon: Icons.home,
                       leading: _buildHomeTab(_currentIndex == 0),
                       text: '',
-                      iconSize: 0, // Hide the icon since we're using leading
+                      iconSize: 0,
                     ),
+                    if (isPatient)
+                      GButton(
+                        icon: Icons.flag,
+                        leading: _buildObjectifsTab(_currentIndex == 1),
+                        text: '',
+                        iconSize: 0,
+                      ),
                     GButton(
-                      icon: Icons.person, // Required but will be hidden by leading
-                      leading: _buildProfileTab(profileImageUrl, _currentIndex == 1),
+                      icon: Icons.person,
+                      leading: _buildProfileTab(
+                        profileImageUrl,
+                        _currentIndex == profileIndex,
+                      ),
                       text: '',
-                      iconSize: 0, // Hide the icon since we're using leading
+                      iconSize: 0,
                     ),
                   ],
                   selectedIndex: _currentIndex,
@@ -212,8 +293,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               ),
             ),
           ),
-        );
-      },
+        ),
+      );
+    },
     );
   }
 }

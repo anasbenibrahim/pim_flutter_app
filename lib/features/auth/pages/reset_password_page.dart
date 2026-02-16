@@ -64,7 +64,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: Colors.white,
       appBar: const CustomAppBar(
         title: 'Reset Password',
       ),
@@ -109,7 +109,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       'Create New Password',
                       style: TextStyle(
                         fontSize: 24.sp,
-                        color: Colors.white,
+                        color: const Color(0xFF333333),
                         fontWeight: FontWeight.bold,
                         fontFamily: 'sans-serif',
                       ),
@@ -119,7 +119,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       'Enter your new password below',
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: const Color(0xFF666666),
                         fontFamily: 'sans-serif',
                       ),
                     ),
@@ -142,7 +142,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscureNewPassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: const Color(0xFF666666),
                           size: 20.sp,
                         ),
                         onPressed: () {
@@ -171,7 +171,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: const Color(0xFF666666),
                           size: 20.sp,
                         ),
                         onPressed: () {

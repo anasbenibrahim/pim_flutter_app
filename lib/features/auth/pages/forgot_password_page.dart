@@ -40,7 +40,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: Colors.white,
       appBar: const CustomAppBar(
         title: 'Forgot Password',
       ),
@@ -79,7 +79,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       'Enter your email address',
                       style: TextStyle(
                         fontSize: 24.sp,
-                        color: Colors.white,
+                        color: const Color(0xFF333333),
                         fontWeight: FontWeight.bold,
                         fontFamily: 'sans-serif',
                       ),
@@ -89,7 +89,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       'We\'ll send you an OTP code to reset your password',
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: const Color(0xFF666666),
                         fontFamily: 'sans-serif',
                       ),
                     ),

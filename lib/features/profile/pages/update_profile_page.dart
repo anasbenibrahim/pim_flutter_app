@@ -87,7 +87,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
         
         return CircleAvatar(
           radius: 60.r,
-          backgroundColor: AppColors.primaryPurple.withValues(alpha: 0.2),
+          backgroundColor: Colors.grey.shade200,
           backgroundImage: NetworkImage(imageUrl),
           onBackgroundImageError: (exception, stackTrace) {
             // Handle error
@@ -97,7 +97,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
         // Local file path
         return CircleAvatar(
           radius: 60.r,
-          backgroundColor: AppColors.primaryPurple.withValues(alpha: 0.2),
+          backgroundColor: Colors.grey.shade200,
           backgroundImage: Image.asset(_imagePath!).image,
         );
       }
@@ -105,11 +105,11 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
     
     return CircleAvatar(
       radius: 60.r,
-      backgroundColor: AppColors.primaryPurple.withValues(alpha: 0.2),
+      backgroundColor: Colors.grey.shade200,
       child: Icon(
         Icons.person,
         size: 60.sp,
-        color: AppColors.primaryPurple,
+        color: const Color(0xFF666666),
       ),
     );
   }
@@ -155,7 +155,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
   Widget build(BuildContext context) {
     if (_user == null) {
       return Scaffold(
-        backgroundColor: AppColors.darkBackground,
+        backgroundColor: Colors.white,
         appBar: const CustomAppBar(title: 'Update Profile'),
         body: Center(
           child: CircularProgressIndicator(color: AppColors.primaryPurple),
@@ -164,7 +164,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: Colors.white,
       appBar: const CustomAppBar(title: 'Update Profile'),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -213,7 +213,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                             backgroundColor: Colors.transparent,
                             builder: (context) => Container(
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1E1E1E),
+                                color: Colors.white,
                                 borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(25.r),
                                   topRight: Radius.circular(25.r),
@@ -223,31 +223,28 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    // Drag Handle
                                     Container(
                                       margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
                                       width: 40.w,
                                       height: 4.h,
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.3),
+                                        color: Colors.grey.shade300,
                                         borderRadius: BorderRadius.circular(2.r),
                                       ),
                                     ),
-                                    // Title
                                     Padding(
                                       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
                                       child: Text(
                                         'Select Image Source',
                                         style: TextStyle(
                                           fontSize: 18.sp,
-                                          color: Colors.white,
+                                          color: const Color(0xFF333333),
                                           fontWeight: FontWeight.bold,
                                           fontFamily: 'sans-serif',
                                         ),
                                       ),
                                     ),
                                     SizedBox(height: 16.h),
-                                    // Gallery Option
                                     Padding(
                                       padding: EdgeInsets.symmetric(horizontal: 24.w),
                                       child: GestureDetector(
@@ -265,10 +262,10 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                           width: double.infinity,
                                           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFF121212),
+                                            color: Colors.white,
                                             borderRadius: BorderRadius.circular(25.r),
                                             border: Border.all(
-                                              color: Colors.white.withValues(alpha: 0.2),
+                                              color: Colors.grey.shade300,
                                               width: 1.w,
                                             ),
                                           ),
@@ -278,13 +275,13 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                                 width: 48.w,
                                                 height: 48.h,
                                                 decoration: BoxDecoration(
-                                                  color: const Color(0xFF1E1E1E),
+                                                  color: Colors.grey.shade100,
                                                   borderRadius: BorderRadius.circular(12.r),
                                                 ),
                                                 child: Icon(
                                                   Icons.photo_library,
                                                   size: 28.sp,
-                                                  color: Colors.white,
+                                                  color: const Color(0xFF333333),
                                                 ),
                                               ),
                                               SizedBox(width: 16.w),
@@ -292,7 +289,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                                 'Gallery',
                                                 style: TextStyle(
                                                   fontSize: 16.sp,
-                                                  color: Colors.white,
+                                                  color: const Color(0xFF333333),
                                                   fontWeight: FontWeight.normal,
                                                   fontFamily: 'sans-serif',
                                                 ),
@@ -303,7 +300,6 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                       ),
                                     ),
                                     SizedBox(height: 16.h),
-                                    // Camera Option
                                     Padding(
                                       padding: EdgeInsets.symmetric(horizontal: 24.w),
                                       child: GestureDetector(
@@ -321,10 +317,10 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                           width: double.infinity,
                                           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFF121212),
+                                            color: Colors.white,
                                             borderRadius: BorderRadius.circular(25.r),
                                             border: Border.all(
-                                              color: Colors.white.withValues(alpha: 0.2),
+                                              color: Colors.grey.shade300,
                                               width: 1.w,
                                             ),
                                           ),
@@ -334,13 +330,13 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                                 width: 48.w,
                                                 height: 48.h,
                                                 decoration: BoxDecoration(
-                                                  color: const Color(0xFF1E1E1E),
+                                                  color: Colors.grey.shade100,
                                                   borderRadius: BorderRadius.circular(12.r),
                                                 ),
                                                 child: Icon(
                                                   Icons.photo_camera,
                                                   size: 28.sp,
-                                                  color: Colors.white,
+                                                  color: const Color(0xFF333333),
                                                 ),
                                               ),
                                               SizedBox(width: 16.w),
@@ -348,7 +344,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                                 'Camera',
                                                 style: TextStyle(
                                                   fontSize: 16.sp,
-                                                  color: Colors.white,
+                                                  color: const Color(0xFF333333),
                                                   fontWeight: FontWeight.normal,
                                                   fontFamily: 'sans-serif',
                                                 ),
@@ -378,7 +374,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                               backgroundColor: Colors.transparent,
                               builder: (context) => Container(
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF1E1E1E),
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(25.r),
                                     topRight: Radius.circular(25.r),
@@ -393,7 +389,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                         width: 40.w,
                                         height: 4.h,
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.3),
+                                          color: Colors.grey.shade300,
                                           borderRadius: BorderRadius.circular(2.r),
                                         ),
                                       ),
@@ -403,7 +399,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                           'Select Image Source',
                                           style: TextStyle(
                                             fontSize: 18.sp,
-                                            color: Colors.white,
+                                            color: const Color(0xFF333333),
                                             fontWeight: FontWeight.bold,
                                             fontFamily: 'sans-serif',
                                           ),
@@ -427,10 +423,10 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                             width: double.infinity,
                                             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF121212),
+                                              color: Colors.white,
                                               borderRadius: BorderRadius.circular(25.r),
                                               border: Border.all(
-                                                color: Colors.white.withValues(alpha: 0.2),
+                                                color: Colors.grey.shade300,
                                                 width: 1.w,
                                               ),
                                             ),
@@ -440,13 +436,13 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                                   width: 48.w,
                                                   height: 48.h,
                                                   decoration: BoxDecoration(
-                                                    color: const Color(0xFF1E1E1E),
+                                                    color: Colors.grey.shade100,
                                                     borderRadius: BorderRadius.circular(12.r),
                                                   ),
                                                   child: Icon(
                                                     Icons.photo_library,
                                                     size: 28.sp,
-                                                    color: Colors.white,
+                                                    color: const Color(0xFF333333),
                                                   ),
                                                 ),
                                                 SizedBox(width: 16.w),
@@ -454,7 +450,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                                   'Gallery',
                                                   style: TextStyle(
                                                     fontSize: 16.sp,
-                                                    color: Colors.white,
+                                                    color: const Color(0xFF333333),
                                                     fontWeight: FontWeight.normal,
                                                     fontFamily: 'sans-serif',
                                                   ),
@@ -482,10 +478,10 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                             width: double.infinity,
                                             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF121212),
+                                              color: Colors.white,
                                               borderRadius: BorderRadius.circular(25.r),
                                               border: Border.all(
-                                                color: Colors.white.withValues(alpha: 0.2),
+                                                color: Colors.grey.shade300,
                                                 width: 1.w,
                                               ),
                                             ),
@@ -495,13 +491,13 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                                   width: 48.w,
                                                   height: 48.h,
                                                   decoration: BoxDecoration(
-                                                    color: const Color(0xFF1E1E1E),
+                                                    color: Colors.grey.shade100,
                                                     borderRadius: BorderRadius.circular(12.r),
                                                   ),
                                                   child: Icon(
                                                     Icons.photo_camera,
                                                     size: 28.sp,
-                                                    color: Colors.white,
+                                                    color: const Color(0xFF333333),
                                                   ),
                                                 ),
                                                 SizedBox(width: 16.w),
@@ -509,7 +505,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                                                   'Camera',
                                                   style: TextStyle(
                                                     fontSize: 16.sp,
-                                                    color: Colors.white,
+                                                    color: const Color(0xFF333333),
                                                     fontWeight: FontWeight.normal,
                                                     fontFamily: 'sans-serif',
                                                   ),
@@ -532,7 +528,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                               color: AppColors.primaryPurple,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: AppColors.darkBackground,
+                                color: Colors.white,
                                 width: 2.w,
                               ),
                             ),

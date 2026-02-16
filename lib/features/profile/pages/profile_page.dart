@@ -54,7 +54,7 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: AppColors.lightBackground,
       appBar: const CustomAppBar(
         title: 'Profile',
         showBackButton: false,
@@ -77,7 +77,7 @@ class ProfilePage extends StatelessWidget {
                     '${state.user.prenom} ${state.user.nom}',
                     style: TextStyle(
                       fontSize: 24.sp,
-                      color: Colors.white,
+                      color: AppColors.lightText,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -87,21 +87,18 @@ class ProfilePage extends StatelessWidget {
                     state.user.email,
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: AppColors.lightTextSecondary,
                     ),
                   ),
                   // Referral Code Section (for patients)
                   if (state.user.role == UserRole.patient) ...[
                     SizedBox(height: 32.h),
                     Card(
-                      elevation: 2,
-                      color: AppColors.darkSurface,
+                      elevation: 0,
+                      color: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        side: BorderSide(
-                          color: AppColors.primaryPurple.withValues(alpha: 0.3),
-                          width: 1,
-                        ),
+                        borderRadius: BorderRadius.circular(16.r),
+                        side: BorderSide(color: Colors.grey.shade200),
                       ),
                       child: Padding(
                         padding: EdgeInsets.all(20.w),
@@ -125,10 +122,10 @@ class ProfilePage extends StatelessWidget {
                                 SizedBox(width: 12.w),
                                 Text(
                                   'Your Referral Code',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 18.sp,
-                                    color: Colors.white,
+                                    color: AppColors.lightText,
                                   ),
                                 ),
                               ],
@@ -155,7 +152,7 @@ class ProfilePage extends StatelessWidget {
                                         fontWeight: FontWeight.bold,
                                         color: state.user.referralCode != null 
                                             ? AppColors.primaryPurple 
-                                            : AppColors.darkTextSecondary,
+                                            : AppColors.lightTextSecondary,
                                         letterSpacing: 1.2,
                                       ),
                                     ),
@@ -191,7 +188,7 @@ class ProfilePage extends StatelessWidget {
                               'Share this code with your family members so they can join',
                               style: TextStyle(
                                 fontSize: 12.sp,
-                                color: AppColors.darkTextSecondary,
+                                color: AppColors.lightTextSecondary,
                               ),
                             ),
                           ],
@@ -201,6 +198,13 @@ class ProfilePage extends StatelessWidget {
                   ],
                   SizedBox(height: 40.h),
                   // Menu Items
+                  if (state.user.role == UserRole.patient)
+                    MenuListTile(
+                      icon: Icons.emoji_events_outlined,
+                      title: 'My Badges',
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.myBadges),
+                      showArrow: true,
+                    ),
                   MenuListTile(
                     icon: Icons.person_outline,
                     title: 'Manage Profile',
@@ -244,7 +248,11 @@ class ProfilePage extends StatelessWidget {
                     showArrow: false,
                     onTap: () {
                       context.read<AuthBloc>().add(const LogoutEvent());
-                      Navigator.pushReplacementNamed(context, AppRoutes.getStarted);
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRoutes.getStarted,
+                        (route) => false,
+                      );
                     },
                   ),
                   SizedBox(height: 32.h),

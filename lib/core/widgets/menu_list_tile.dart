@@ -23,19 +23,23 @@ class MenuListTile extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.grey.shade800.withValues(alpha: 0.5),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         leading: Container(
           padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
-            color: (iconColor ?? AppColors.primaryPurple).withValues(alpha: 0.2),
+            color: (iconColor ?? AppColors.primaryPurple).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(8.r),
           ),
           child: Icon(
@@ -48,16 +52,12 @@ class MenuListTile extends StatelessWidget {
           title,
           style: TextStyle(
             fontSize: 16.sp,
-            color: Colors.white,
+            color: AppColors.lightText,
             fontWeight: FontWeight.w500,
           ),
         ),
         trailing: showArrow
-            ? Image.asset(
-                'assets/images/go.png',
-                width: 20.w,
-                height: 20.h,
-              )
+            ? Icon(Icons.arrow_forward_ios, size: 14.sp, color: AppColors.lightTextSecondary)
             : null,
         onTap: onTap,
         shape: RoundedRectangleBorder(

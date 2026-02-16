@@ -57,7 +57,7 @@ class _RegisterVolontairePageState extends State<RegisterVolontairePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: Colors.white,
       appBar: const CustomAppBar(
         title: 'Register',
       ),
@@ -186,7 +186,7 @@ class _RegisterVolontairePageState extends State<RegisterVolontairePage> {
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: const Color(0xFF666666),
                           size: 20.sp,
                         ),
                         onPressed: () {

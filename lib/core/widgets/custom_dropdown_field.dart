@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../theme/app_colors.dart';
 
 class CustomDropdownField<T> extends StatelessWidget {
   final String label;
@@ -9,7 +10,7 @@ class CustomDropdownField<T> extends StatelessWidget {
   final void Function(T?)? onChanged;
   final String? Function(T?)? validator;
   final bool enabled;
-  
+
   const CustomDropdownField({
     super.key,
     required this.label,
@@ -20,7 +21,7 @@ class CustomDropdownField<T> extends StatelessWidget {
     this.validator,
     this.enabled = true,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -30,8 +31,8 @@ class CustomDropdownField<T> extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 14.sp,
-            color: Colors.white.withValues(alpha: 0.9),
-            fontWeight: FontWeight.normal,
+            color: AppColors.lightText,
+            fontWeight: FontWeight.w500,
             fontFamily: 'sans-serif',
           ),
         ),
@@ -39,11 +40,11 @@ class CustomDropdownField<T> extends StatelessWidget {
         Container(
           height: 50.h,
           decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E),
-            borderRadius: BorderRadius.circular(25.r),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
-              width: 1.w,
+              color: Colors.grey.shade300,
+              width: 1,
             ),
           ),
           child: Padding(
@@ -51,11 +52,11 @@ class CustomDropdownField<T> extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerLeft,
               child: DropdownButtonFormField<T>(
-                initialValue: value,
-                dropdownColor: const Color(0xFF1E1E1E),
+                value: value,
+                dropdownColor: Colors.white,
                 style: TextStyle(
                   fontSize: 16.sp,
-                  color: Colors.white,
+                  color: AppColors.lightText,
                   fontWeight: FontWeight.normal,
                   fontFamily: 'sans-serif',
                 ),
@@ -63,7 +64,7 @@ class CustomDropdownField<T> extends StatelessWidget {
                   hintText: hint,
                   hintStyle: TextStyle(
                     fontSize: 16.sp,
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: AppColors.lightTextSecondary,
                     fontWeight: FontWeight.normal,
                     fontFamily: 'sans-serif',
                   ),
@@ -77,8 +78,8 @@ class CustomDropdownField<T> extends StatelessWidget {
                   isDense: true,
                 ),
                 icon: Icon(
-                  Icons.arrow_drop_down,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  Icons.keyboard_arrow_down,
+                  color: AppColors.lightTextSecondary,
                   size: 24.sp,
                 ),
                 items: items,

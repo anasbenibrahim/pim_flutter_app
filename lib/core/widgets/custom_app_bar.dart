@@ -18,17 +18,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
       leading: showBackButton
           ? IconButton(
-              icon: Image.asset(
-                'assets/images/back.png',
-                width: 32.w,
-                height: 32.h,
-              ),
+              icon: Icon(Icons.arrow_back_ios, size: 20.sp, color: const Color(0xFF333333)),
               onPressed: onBackPressed ?? () => Navigator.pop(context),
             )
           : null,
@@ -36,8 +32,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         title,
         style: TextStyle(
           fontSize: 20.sp,
-          color: Colors.white,
-          fontWeight: FontWeight.normal,
+          color: const Color(0xFF333333),
+          fontWeight: FontWeight.w600,
           fontFamily: 'sans-serif',
         ),
       ),

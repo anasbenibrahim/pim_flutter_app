@@ -9,7 +9,7 @@ class GetStartedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(24.w),
@@ -29,7 +29,7 @@ class GetStartedPage extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 28.sp,
-                  color: Colors.white,
+                  color: const Color(0xFF333333),
                   fontFamily: 'sans-serif',
                 ),
                 textAlign: TextAlign.center,
@@ -38,7 +38,7 @@ class GetStartedPage extends StatelessWidget {
               Text(
                 'Your personal health management companion',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: const Color(0xFF666666),
                   fontSize: 16.sp,
                   fontFamily: 'sans-serif',
                 ),
@@ -57,10 +57,10 @@ class GetStartedPage extends StatelessWidget {
                 height: 50.h,
                 decoration: BoxDecoration(
                   color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(25.r),
+                  borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1.w,
+                    color: Colors.grey.shade300,
+                    width: 1,
                   ),
                 ),
                 child: Material(
@@ -69,14 +69,14 @@ class GetStartedPage extends StatelessWidget {
                     onTap: () {
                       Navigator.pushNamed(context, AppRoutes.roleSelection);
                     },
-                    borderRadius: BorderRadius.circular(25.r),
+                    borderRadius: BorderRadius.circular(12.r),
                     child: Center(
                       child: Text(
                         'Register',
                         style: TextStyle(
                           fontSize: 16.sp,
-                          color: Colors.white,
-                          fontWeight: FontWeight.normal,
+                          color: const Color(0xFF593A84),
+                          fontWeight: FontWeight.w600,
                           fontFamily: 'sans-serif',
                         ),
                       ),

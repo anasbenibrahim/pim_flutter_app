@@ -57,13 +57,13 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       height: 56.h,
       textStyle: TextStyle(
         fontSize: 24.sp,
-        color: Colors.white,
+        color: const Color(0xFF333333),
         fontWeight: FontWeight.bold,
       ),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Colors.white,
         border: Border.all(
-          color: Colors.grey.shade700,
+          color: Colors.grey.shade300,
           width: 1,
         ),
         borderRadius: BorderRadius.circular(12.r),
@@ -77,11 +77,11 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       height: 56.h,
       textStyle: TextStyle(
         fontSize: 24.sp,
-        color: Colors.white,
+        color: const Color(0xFF333333),
         fontWeight: FontWeight.bold,
       ),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
+        color: Colors.white,
         border: Border.all(
           color: AppColors.primaryPurple,
           width: 2,
@@ -97,7 +97,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       height: 56.h,
       textStyle: TextStyle(
         fontSize: 24.sp,
-        color: Colors.white,
+        color: const Color(0xFF333333),
         fontWeight: FontWeight.bold,
       ),
       decoration: BoxDecoration(
@@ -114,7 +114,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: Colors.white,
       appBar: const CustomAppBar(
         title: 'Verify OTP',
       ),
@@ -154,7 +154,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                       'Enter OTP Code',
                       style: TextStyle(
                         fontSize: 24.sp,
-                        color: Colors.white,
+                        color: const Color(0xFF333333),
                         fontWeight: FontWeight.bold,
                         fontFamily: 'sans-serif',
                       ),
@@ -164,7 +164,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                       'We\'ve sent a 6-digit code to ${widget.email}',
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: const Color(0xFF666666),
                         fontFamily: 'sans-serif',
                       ),
                     ),
@@ -174,7 +174,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                       'OTP Code',
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: const Color(0xFF666666),
                         fontWeight: FontWeight.w500,
                       ),
                     ),

@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: Colors.white,
       appBar: const CustomAppBar(
         title: 'Login',
       ),
@@ -63,7 +63,11 @@ class _LoginPageState extends State<LoginPage> {
               duration: const Duration(seconds: 3),
             );
           } else if (state is AuthAuthenticated) {
-            Navigator.pushReplacementNamed(context, AppRoutes.mainNavigation);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRoutes.mainNavigation,
+              (route) => false,
+            );
           }
         },
         builder: (context, state) {
@@ -108,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: const Color(0xFF666666),
                           size: 20.sp,
                         ),
                         onPressed: () {
@@ -149,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         Expanded(
                           child: Divider(
-                            color: Colors.white.withValues(alpha: 0.3),
+                            color: Colors.grey.shade300,
                             thickness: 1,
                           ),
                         ),
@@ -159,14 +163,14 @@ class _LoginPageState extends State<LoginPage> {
                             'Or login with',
                             style: TextStyle(
                               fontSize: 14.sp,
-                              color: Colors.white.withValues(alpha: 0.7),
+                              color: const Color(0xFF666666),
                               fontFamily: 'sans-serif',
                             ),
                           ),
                         ),
                         Expanded(
                           child: Divider(
-                            color: Colors.white.withValues(alpha: 0.3),
+                            color: Colors.grey.shade300,
                             thickness: 1,
                           ),
                         ),
@@ -212,7 +216,7 @@ class _LoginPageState extends State<LoginPage> {
                             'Don\'t have account? ',
                             style: TextStyle(
                               fontSize: 14.sp,
-                              color: Colors.white.withValues(alpha: 0.7),
+                              color: const Color(0xFF666666),
                               fontFamily: 'sans-serif',
                             ),
                           ),

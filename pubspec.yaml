@@ -49,8 +49,9 @@ dependencies:
   # Image Picker
   image_picker: ^1.0.7
   
-  # Date Picker
+  # Date Picker & Calendar
   intl: ^0.19.0
+  table_calendar: ^3.1.2
   
   # Path Provider
   path_provider: ^2.1.1

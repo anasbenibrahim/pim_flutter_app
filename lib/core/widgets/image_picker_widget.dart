@@ -57,41 +57,38 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E),
+          color: Colors.white,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(25.r),
-            topRight: Radius.circular(25.r),
+            topLeft: Radius.circular(20.r),
+            topRight: Radius.circular(20.r),
           ),
         ),
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Drag Handle
               Container(
                 margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.3),
+                  color: Colors.grey.shade400,
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
-              // Title
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
                 child: Text(
                   'Select Image Source',
                   style: TextStyle(
                     fontSize: 18.sp,
-                    color: Colors.white,
+                    color: const Color(0xFF333333),
                     fontWeight: FontWeight.bold,
                     fontFamily: 'sans-serif',
                   ),
                 ),
               ),
               SizedBox(height: 16.h),
-              // Gallery Option
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.w),
                 child: GestureDetector(
@@ -103,11 +100,11 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF121212),
-                      borderRadius: BorderRadius.circular(25.r),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        width: 1.w,
+                        color: Colors.grey.shade300,
+                        width: 1,
                       ),
                     ),
                     child: Row(
@@ -116,13 +113,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                           width: 48.w,
                           height: 48.h,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1E1E1E),
+                            color: const Color(0xFF593A84).withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Icon(
                             Icons.photo_library,
                             size: 28.sp,
-                            color: Colors.white,
+                            color: const Color(0xFF593A84),
                           ),
                         ),
                         SizedBox(width: 16.w),
@@ -130,8 +127,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                           'Gallery',
                           style: TextStyle(
                             fontSize: 16.sp,
-                            color: Colors.white,
-                            fontWeight: FontWeight.normal,
+                            color: const Color(0xFF333333),
+                            fontWeight: FontWeight.w500,
                             fontFamily: 'sans-serif',
                           ),
                         ),
@@ -141,7 +138,6 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                 ),
               ),
               SizedBox(height: 16.h),
-              // Camera Option
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.w),
                 child: GestureDetector(
@@ -153,11 +149,11 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF121212),
-                      borderRadius: BorderRadius.circular(25.r),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        width: 1.w,
+                        color: Colors.grey.shade300,
+                        width: 1,
                       ),
                     ),
                     child: Row(
@@ -166,13 +162,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                           width: 48.w,
                           height: 48.h,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1E1E1E),
+                            color: const Color(0xFF593A84).withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Icon(
                             Icons.photo_camera,
                             size: 28.sp,
-                            color: Colors.white,
+                            color: const Color(0xFF593A84),
                           ),
                         ),
                         SizedBox(width: 16.w),
@@ -180,8 +176,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                           'Camera',
                           style: TextStyle(
                             fontSize: 16.sp,
-                            color: Colors.white,
-                            fontWeight: FontWeight.normal,
+                            color: const Color(0xFF333333),
+                            fontWeight: FontWeight.w500,
                             fontFamily: 'sans-serif',
                           ),
                         ),

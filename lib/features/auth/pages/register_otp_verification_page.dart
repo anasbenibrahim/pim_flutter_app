@@ -123,7 +123,7 @@ class _RegisterOtpVerificationPageState extends State<RegisterOtpVerificationPag
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: Colors.white,
       appBar: const CustomAppBar(
         title: 'Verify OTP',
       ),
@@ -141,7 +141,11 @@ class _RegisterOtpVerificationPageState extends State<RegisterOtpVerificationPag
               duration: const Duration(seconds: 3),
             );
           } else if (state is AuthAuthenticated) {
-            Navigator.pushReplacementNamed(context, AppRoutes.mainNavigation);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRoutes.mainNavigation,
+              (route) => false,
+            );
           }
         },
         builder: (context, state) {
@@ -166,7 +170,7 @@ class _RegisterOtpVerificationPageState extends State<RegisterOtpVerificationPag
                     'We\'ve sent a 6-digit code to ${widget.email}',
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: const Color(0xFF666666),
                       fontFamily: 'sans-serif',
                     ),
                   ),
@@ -176,7 +180,7 @@ class _RegisterOtpVerificationPageState extends State<RegisterOtpVerificationPag
                     'OTP Code',
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: const Color(0xFF666666),
                       fontWeight: FontWeight.w500,
                     ),
                   ),

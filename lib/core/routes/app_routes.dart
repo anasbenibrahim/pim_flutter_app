@@ -13,6 +13,8 @@ import '../../features/home/pages/home_page.dart';
 import '../../features/profile/pages/profile_page.dart';
 import '../../features/profile/pages/update_profile_page.dart';
 import '../../features/navigation/pages/main_navigation_page.dart';
+import '../../features/objectifs/pages/objectifs_list_page.dart';
+import '../../features/badges/pages/my_badges_page.dart';
 
 class AppRoutes {
   static const String getStarted = '/get-started';
@@ -29,7 +31,9 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String updateProfile = '/update-profile';
   static const String mainNavigation = '/main-navigation';
-  
+  static const String objectifs = '/objectifs';
+  static const String myBadges = '/my-badges';
+
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case getStarted:
@@ -93,6 +97,12 @@ class AppRoutes {
       case mainNavigation:
         return MaterialPageRoute(builder: (_) => const MainNavigationPage());
       
+      case objectifs:
+        return MaterialPageRoute(builder: (_) => const ObjectifsListPage());
+
+      case myBadges:
+        return MaterialPageRoute(builder: (_) => const MyBadgesPage());
+
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

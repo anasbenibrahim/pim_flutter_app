@@ -22,18 +22,20 @@ class RegisterPatientPage extends StatefulWidget {
 }
 
 class _RegisterPatientPageState extends State<RegisterPatientPage> {
-  final _formKey = GlobalKey<FormState>();
+  final _formKeyStep1 = GlobalKey<FormState>();
+  final _formKeyStep2 = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nomController = TextEditingController();
   final _prenomController = TextEditingController();
   final _ageController = TextEditingController();
-  
+
   DateTime? _dateNaissance;
   DateTime? _sobrietyDate;
   AddictionType? _selectedAddiction;
   String? _imagePath;
   bool _obscurePassword = true;
+  int _currentStep = 0;
   
   @override
   void dispose() {
@@ -63,8 +65,14 @@ class _RegisterPatientPageState extends State<RegisterPatientPage> {
     }
   }
   
+  void _goToStep2() {
+    if (_formKeyStep1.currentState!.validate()) {
+      setState(() => _currentStep = 1);
+    }
+  }
+
   void _handleRegister() {
-    if (_formKey.currentState!.validate()) {
+    if (_formKeyStep2.currentState!.validate()) {
       if (_dateNaissance == null) {
         Get.snackbar(
           'Error',
@@ -124,9 +132,12 @@ class _RegisterPatientPageState extends State<RegisterPatientPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: const CustomAppBar(
+      backgroundColor: Colors.white,
+      appBar: CustomAppBar(
         title: 'Register',
+        onBackPressed: _currentStep == 1
+            ? () => setState(() => _currentStep = 0)
+            : null,
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -157,251 +168,297 @@ class _RegisterPatientPageState extends State<RegisterPatientPage> {
           return SafeArea(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 20.h),
-                    // Image Picker
-                    Center(
-                      child: ImagePickerWidget(
-                        onImageSelected: (path) {
-                          setState(() {
-                            _imagePath = path;
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 32.h),
-                    // Nom Field
-                    CustomTextField(
-                      label: 'Nom',
-                      hint: 'Enter your last name',
-                      controller: _nomController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your nom';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20.h),
-                    // Prenom Field
-                    CustomTextField(
-                      label: 'Prenom',
-                      hint: 'Enter your first name',
-                      controller: _prenomController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your prenom';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20.h),
-                    // Email Field
-                    CustomTextField(
-                      label: 'Email',
-                      hint: 'Enter your email address',
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20.h),
-                    // Age Field
-                    CustomTextField(
-                      label: 'Age',
-                      hint: 'Enter your age',
-                      controller: _ageController,
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your age';
-                        }
-                        final age = int.tryParse(value);
-                        if (age == null || age < 1 || age > 150) {
-                          return 'Please enter a valid age';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20.h),
-                    // Date de Naissance
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Date de Naissance',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontWeight: FontWeight.normal,
-                            fontFamily: 'sans-serif',
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
-                        GestureDetector(
-                          onTap: () => _selectDate(context, true),
-                          child: Container(
-                            width: double.infinity,
-                            height: 50.h,
-                            padding: EdgeInsets.symmetric(horizontal: 20.w),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1E1E1E),
-                              borderRadius: BorderRadius.circular(25.r),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                width: 1.w,
-                              ),
-                            ),
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              _dateNaissance != null
-                                  ? DateFormat('yyyy-MM-dd').format(_dateNaissance!)
-                                  : 'Select date of birth',
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                color: _dateNaissance != null
-                                    ? Colors.white
-                                    : Colors.white.withValues(alpha: 0.5),
-                                fontWeight: FontWeight.normal,
-                                fontFamily: 'sans-serif',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20.h),
-                    // Sobriety Date
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sobriety Date',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontWeight: FontWeight.normal,
-                            fontFamily: 'sans-serif',
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
-                        GestureDetector(
-                          onTap: () => _selectDate(context, false),
-                          child: Container(
-                            width: double.infinity,
-                            height: 50.h,
-                            padding: EdgeInsets.symmetric(horizontal: 20.w),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1E1E1E),
-                              borderRadius: BorderRadius.circular(25.r),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                width: 1.w,
-                              ),
-                            ),
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              _sobrietyDate != null
-                                  ? DateFormat('yyyy-MM-dd').format(_sobrietyDate!)
-                                  : 'Select sobriety date',
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                color: _sobrietyDate != null
-                                    ? Colors.white
-                                    : Colors.white.withValues(alpha: 0.5),
-                                fontWeight: FontWeight.normal,
-                                fontFamily: 'sans-serif',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20.h),
-                    // Addiction Type Dropdown
-                    CustomDropdownField<AddictionType>(
-                      label: 'Addiction Type',
-                      hint: 'Select addiction type',
-                      value: _selectedAddiction,
-                      items: AddictionType.values.map((type) {
-                        return DropdownMenuItem(
-                          value: type,
-                          child: Text(
-                            type.displayName,
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              color: Colors.white,
-                              fontFamily: 'sans-serif',
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedAddiction = value;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Please select addiction type';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20.h),
-                    // Password Field
-                    CustomTextField(
-                      label: 'Password',
-                      hint: 'Enter your password',
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.white.withValues(alpha: 0.7),
-                          size: 20.sp,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 32.h),
-                    // Register Button
-                    CustomButton(
-                      text: 'Register',
-                      onPressed: state is AuthLoading ? null : _handleRegister,
-                      isLoading: state is AuthLoading,
-                    ),
-                    SizedBox(height: 32.h),
-                  ],
-                ),
-              ),
+              child: _currentStep == 0 ? _buildStep1(context, state) : _buildStep2(context, state),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildStep1(BuildContext context, AuthState state) {
+    return Form(
+      key: _formKeyStep1,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 20.h),
+          Text(
+            'Informations personnelles',
+            style: TextStyle(
+              fontSize: 22.sp,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF333333),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Étape 1 sur 2',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF666666),
+            ),
+          ),
+          SizedBox(height: 24.h),
+          Center(
+            child: ImagePickerWidget(
+              onImageSelected: (path) {
+                setState(() {
+                  _imagePath = path;
+                });
+              },
+            ),
+          ),
+          SizedBox(height: 28.h),
+          CustomTextField(
+            label: 'Nom',
+            hint: 'Enter your last name',
+            controller: _nomController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your nom';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: 20.h),
+          CustomTextField(
+            label: 'Prenom',
+            hint: 'Enter your first name',
+            controller: _prenomController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your prenom';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: 20.h),
+          CustomTextField(
+            label: 'Email',
+            hint: 'Enter your email address',
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your email';
+              }
+              if (!value.contains('@')) {
+                return 'Please enter a valid email';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: 20.h),
+          CustomTextField(
+            label: 'Age',
+            hint: 'Enter your age',
+            controller: _ageController,
+            keyboardType: TextInputType.number,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your age';
+              }
+              final age = int.tryParse(value);
+              if (age == null || age < 1 || age > 150) {
+                return 'Please enter a valid age';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: 32.h),
+          CustomButton(
+            text: 'Continuer',
+            onPressed: state is AuthLoading ? null : _goToStep2,
+            isLoading: false,
+          ),
+          SizedBox(height: 32.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStep2(BuildContext context, AuthState state) {
+    return Form(
+      key: _formKeyStep2,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 20.h),
+          Text(
+            'Informations de récupération',
+            style: TextStyle(
+              fontSize: 22.sp,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF333333),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Étape 2 sur 2',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF666666),
+            ),
+          ),
+          SizedBox(height: 24.h),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Date de Naissance',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color(0xFF333333),
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'sans-serif',
+                ),
+              ),
+              SizedBox(height: 8.h),
+              GestureDetector(
+                onTap: () => _selectDate(context, true),
+                child: Container(
+                  width: double.infinity,
+                  height: 50.h,
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: Colors.grey.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _dateNaissance != null
+                        ? DateFormat('yyyy-MM-dd').format(_dateNaissance!)
+                        : 'Select date of birth',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      color: _dateNaissance != null
+                          ? const Color(0xFF333333)
+                          : const Color(0xFF666666),
+                      fontWeight: FontWeight.normal,
+                      fontFamily: 'sans-serif',
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20.h),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Sobriety Date',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color(0xFF333333),
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'sans-serif',
+                ),
+              ),
+              SizedBox(height: 8.h),
+              GestureDetector(
+                onTap: () => _selectDate(context, false),
+                child: Container(
+                  width: double.infinity,
+                  height: 50.h,
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: Colors.grey.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _sobrietyDate != null
+                        ? DateFormat('yyyy-MM-dd').format(_sobrietyDate!)
+                        : 'Select sobriety date',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      color: _sobrietyDate != null
+                          ? const Color(0xFF333333)
+                          : const Color(0xFF666666),
+                      fontWeight: FontWeight.normal,
+                      fontFamily: 'sans-serif',
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20.h),
+          CustomDropdownField<AddictionType>(
+            label: 'Addiction Type',
+            hint: 'Select addiction type',
+            value: _selectedAddiction,
+            items: AddictionType.values.map((type) {
+              return DropdownMenuItem(
+                value: type,
+                child: Text(
+                  type.displayName,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    color: const Color(0xFF333333),
+                    fontFamily: 'sans-serif',
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedAddiction = value;
+              });
+            },
+            validator: (value) {
+              if (value == null) {
+                return 'Please select addiction type';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: 20.h),
+          CustomTextField(
+            label: 'Password',
+            hint: 'Enter your password',
+            controller: _passwordController,
+            obscureText: _obscurePassword,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your password';
+              }
+              if (value.length < 6) {
+                return 'Password must be at least 6 characters';
+              }
+              return null;
+            },
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                color: const Color(0xFF666666),
+                size: 20.sp,
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
+            ),
+          ),
+          SizedBox(height: 32.h),
+          CustomButton(
+            text: 'Register',
+            onPressed: state is AuthLoading ? null : _handleRegister,
+            isLoading: state is AuthLoading,
+          ),
+          SizedBox(height: 32.h),
+        ],
       ),
     );
   }
