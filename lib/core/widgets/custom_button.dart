@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:vibration/vibration.dart';
 import '../theme/app_colors.dart';
 
 class CustomButton extends StatelessWidget {
@@ -27,7 +28,14 @@ class CustomButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: isLoading ? null : onPressed,
+          onTap: isLoading 
+            ? null 
+            : () async {
+                if (await Vibration.hasVibrator() ?? false) {
+                  Vibration.vibrate(duration: 15, amplitude: 128);
+                }
+                onPressed?.call();
+              },
           borderRadius: BorderRadius.circular(25.r),
           child: Center(
             child: isLoading

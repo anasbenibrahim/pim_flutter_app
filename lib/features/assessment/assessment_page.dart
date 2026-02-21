@@ -1,25 +1,5 @@
-import 'dart:math';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../core/services/api_service.dart';
-import '../../core/routes/app_routes.dart';
-import '../auth/bloc/auth_bloc.dart';
-import '../auth/bloc/auth_event.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'steps/q1_health_goal.dart';
-import 'steps/q2_gender.dart';
-import 'steps/q3_mood.dart';
-import 'steps/q4_sleep.dart';
-import 'steps/q5_stress.dart';
-import 'steps/q6_professional_help.dart';
-import 'steps/q7_medications.dart';
-import 'steps/q8_physical_distress.dart';
-import 'steps/q9_personality.dart';
-import 'steps/q10_mental_health.dart';
-
-import '../../core/theme/app_colors.dart';
+import 'package:vibration/vibration.dart';
+import '../../core/widgets/cosmic_background.dart';
 
 class AssessmentPage extends StatefulWidget {
   const AssessmentPage({super.key});
@@ -49,8 +29,9 @@ class _AssessmentPageState extends State<AssessmentPage> {
 
   void _next() {
     if (_currentPage < _totalPages - 1) {
+      Vibration.vibrate(duration: 10, amplitude: 60);
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 600),
         curve: Curves.easeInOutCubic,
       );
     }
@@ -58,8 +39,9 @@ class _AssessmentPageState extends State<AssessmentPage> {
 
   void _back() {
     if (_currentPage > 0) {
+      Vibration.vibrate(duration: 5, amplitude: 40);
       _pageController.previousPage(
-        duration: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 600),
         curve: Curves.easeInOutCubic,
       );
     } else {
@@ -68,6 +50,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
   }
 
   Future<void> _submit() async {
+    Vibration.vibrate(duration: 30, amplitude: 128);
     setState(() => _submitting = true);
     try {
       await ApiService().submitAssessment(
@@ -110,9 +93,11 @@ class _AssessmentPageState extends State<AssessmentPage> {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
-      body: SafeArea(
-        child: Column(
-          children: [
+      body: CosmicBackground(
+        zoom: 1.0 + (_currentPage * 0.05),
+        child: SafeArea(
+          child: Column(
+            children: [
             // ─── Top Bar ───
             Padding(
               padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),

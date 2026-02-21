@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:vibration/vibration.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_navigation/get_navigation.dart';
@@ -60,6 +61,13 @@ class _HomePageState extends State<HomePage> {
                     _buildQuickActions(context, state.user.role),
 
                     SizedBox(height: 24.h),
+                    
+                    // Mood Journey Section
+                    Text("Mood Journey", style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
+                    SizedBox(height: 12.h),
+                    _buildMoodJourneyChart(),
+
+                    SizedBox(height: 24.h),
 
                     // Profile snapshot
                     _buildProfileCard(state.user.role),
@@ -100,15 +108,16 @@ class _HomePageState extends State<HomePage> {
         ),
         GestureDetector(
           onTap: () {
+            Vibration.vibrate(duration: 10, amplitude: 100);
             context.read<AuthBloc>().add(const LogoutEvent());
             Navigator.pushReplacementNamed(context, AppRoutes.getStarted);
           },
           child: Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
+              color: AppColors.getGlassColor(context),
               borderRadius: BorderRadius.circular(12.r),
-              border: theme.brightness == Brightness.dark ? Border.all(color: Colors.white.withOpacity(0.05)) : null,
+              border: Border.all(color: AppColors.getGlassBorder(context)),
             ),
             child: Icon(Icons.logout_rounded, size: 20.sp, color: theme.colorScheme.onSurface.withOpacity(0.4)),
           ),
@@ -225,23 +234,30 @@ class _HomePageState extends State<HomePage> {
     return Row(
       children: actions.map((a) {
         return Expanded(
-          child: Container(
-            margin: EdgeInsets.only(right: a != actions.last ? 10.w : 0),
-            padding: EdgeInsets.symmetric(vertical: 18.h),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(16.r),
-              border: theme.brightness == Brightness.dark ? Border.all(color: Colors.white.withOpacity(0.05)) : null,
-            ),
-            child: Column(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(10.w),
-                  decoration: BoxDecoration(color: a.color.withOpacity(0.1), shape: BoxShape.circle),
-                  child: Icon(a.icon, color: a.color, size: 22.sp),
-                ),
-                SizedBox(height: 8.h),
-                Text(a.label, style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.7))),
-              ],
+          child: GestureDetector(
+            onTap: () {
+              Vibration.vibrate(duration: 5, amplitude: 50);
+              // Navigation logic here if needed
+            },
+            child: Container(
+              margin: EdgeInsets.only(right: a != actions.last ? 10.w : 0),
+              padding: EdgeInsets.symmetric(vertical: 18.h),
+              decoration: BoxDecoration(
+                color: AppColors.getGlassColor(context),
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(color: AppColors.getGlassBorder(context)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(10.w),
+                    decoration: BoxDecoration(color: a.color.withOpacity(0.1), shape: BoxShape.circle),
+                    child: Icon(a.icon, color: a.color, size: 22.sp),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(a.label, style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.7))),
+                ],
+              ),
             ),
           ),
         );
@@ -472,6 +488,119 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
+
+  Widget _buildMoodJourneyChart() {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      height: 180.h,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: AppColors.getGlassColor(context),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: AppColors.getGlassBorder(context)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Weekly Trend", style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(color: AppColors.emerald.withOpacity(0.1), borderRadius: BorderRadius.circular(8.r)),
+                child: Text("+12% improvement", style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w700, color: AppColors.emerald)),
+              ),
+            ],
+          ),
+          const Expanded(child: Center(child: _MoodChart())),
+          SizedBox(height: 8.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) {
+              return Text(day, style: TextStyle(fontSize: 10.sp, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.w600));
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MoodChart extends StatelessWidget {
+  const _MoodChart();
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size(double.infinity, 100.h),
+      painter: _MoodChartPainter(
+        color: Theme.of(context).colorScheme.primary,
+        isDark: Theme.of(context).brightness == Brightness.dark,
+      ),
+    );
+  }
+}
+
+class _MoodChartPainter extends CustomPainter {
+  final Color color;
+  final bool isDark;
+  _MoodChartPainter({required this.color, required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 3.w
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final fillPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [color.withOpacity(0.2), Colors.transparent],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    final path = Path();
+    final points = [
+      Offset(0, size.height * 0.7),
+      Offset(size.width * 0.15, size.height * 0.5),
+      Offset(size.width * 0.3, size.height * 0.8),
+      Offset(size.width * 0.5, size.height * 0.3),
+      Offset(size.width * 0.7, size.height * 0.4),
+      Offset(size.width * 0.85, size.height * 0.2),
+      Offset(size.width, size.height * 0.3),
+    ];
+
+    path.moveTo(points[0].dx, points[0].dy);
+    for (int i = 0; i < points.length - 1; i++) {
+        final p1 = points[i];
+        final p2 = points[i + 1];
+        final controlPoint1 = Offset(p1.dx + (p2.dx - p1.dx) / 2, p1.dy);
+        final controlPoint2 = Offset(p1.dx + (p2.dx - p1.dx) / 2, p2.dy);
+        path.cubicTo(controlPoint1.dx, controlPoint1.dy, controlPoint2.dx, controlPoint2.dy, p2.dx, p2.dy);
+    }
+
+    final fillPath = Path.from(path);
+    fillPath.lineTo(size.width, size.height);
+    fillPath.lineTo(0, size.height);
+    fillPath.close();
+
+    canvas.drawPath(fillPath, fillPaint);
+    canvas.drawPath(path, paint);
+    
+    // Draw data points
+    for (final p in points) {
+      canvas.drawCircle(p, 4.w, Paint()..color = isDark ? Colors.white : color);
+      canvas.drawCircle(p, 2.w, Paint()..color = isDark ? color : Colors.white);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _RingPainter extends CustomPainter {
