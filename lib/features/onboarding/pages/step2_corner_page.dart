@@ -4,128 +4,144 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
-import '../../../core/widgets/premium_widgets.dart';
-import '../../../core/theme/app_colors.dart';
+
+const _sapphire  = Color(0xFF0D6078);
+const _linen     = Color(0xFFF2EBE1);
+const _indigo    = Color(0xFF022F40);
+const _emerald   = Color(0xFF46C67D);
+const _sunflower = Color(0xFFF8C929);
 
 class CornerPage extends StatelessWidget {
   final VoidCallback onNext;
 
   const CornerPage({super.key, required this.onNext});
 
+  static const _regionOptions = ['TUNIS', 'ARIANA', 'BEN_AROUS', 'MANOUBA', 'SOUSSE', 'SFAX', 'NABEUL', 'BIZERTE', 'MONASTIR', 'KAIROUAN', 'AUTRE'];
+  static const _activityLabels = {
+    'STUDENT': '📚  Étudiant',
+    'PROFESSIONAL': '💼  Professionnel',
+    'UNEMPLOYED': '🔍  Sans emploi',
+    'RETIRED': '🌅  Retraité',
+  };
+  static const _rhythmOptions = {
+    'MORNING_PERSON': '🌅  Lève-tôt',
+    'NIGHT_OWL': '🌙  Couche-tard',
+    'IRREGULAR': '🔄  Irrégulier',
+  };
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: Colors.transparent,
+          backgroundColor: _linen,
           body: SingleChildScrollView(
-            padding: EdgeInsets.all(24.w),
+            padding: EdgeInsets.all(28.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Ton Coin",
-                  style: TextStyle(fontSize: 28.sp, fontWeight: FontWeight.bold, color: AppColors.getPremiumText(context)),
-                ),
-                SizedBox(height: 8.h),
-                Text(
-                  "Dis-nous en plus sur ton environnement.",
-                  style: TextStyle(color: AppColors.getPremiumTextSecondary(context), fontSize: 14.sp),
-                ),
-                SizedBox(height: 32.h),
+                Text("Ton Coin", style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w800, color: _indigo, letterSpacing: -0.5)),
+                SizedBox(height: 6.h),
+                Text("Dis-nous en plus sur ton environnement.", style: TextStyle(color: _indigo.withOpacity(0.5), fontSize: 14.sp)),
+                SizedBox(height: 28.h),
 
-                GlassCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Win toskon ? (Région)", 
-                        style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.getPremiumText(context), fontSize: 16.sp)),
-                      SizedBox(height: 16.h),
-                      Wrap(
-                        spacing: 10.w,
-                        runSpacing: 10.h,
-                        children: ['TUNIS', 'ARIANA', 'SOUSSE', 'SFAX', 'AUTRE'].map((region) {
-                          final isSelected = state.region == region;
-                          return ChoiceChip(
-                            label: Text(region),
-                            selected: isSelected,
-                            selectedColor: AppColors.primaryPurple,
-                            backgroundColor: AppColors.getGlassColor(context).withOpacity(0.05),
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : AppColors.getPremiumTextSecondary(context),
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            ),
-                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
-                            onSelected: (selected) {
-                              context.read<OnboardingBloc>().add(RegionSelected(region));
-                            },
-                          );
-                        }).toList(),
+                // ─── Region ───
+                _sectionLabel('Win toskon ? (Région)'),
+                SizedBox(height: 10.h),
+                Wrap(
+                  spacing: 8.w, runSpacing: 8.h,
+                  children: _regionOptions.map((region) {
+                    final selected = state.region == region;
+                    return GestureDetector(
+                      onTap: () => context.read<OnboardingBloc>().add(RegionSelected(region)),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                        decoration: BoxDecoration(
+                          color: selected ? _sapphire : Colors.white,
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(color: selected ? _sapphire : _indigo.withOpacity(0.08)),
+                        ),
+                        child: Text(
+                          region.replaceAll('_', ' '),
+                          style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600, color: selected ? Colors.white : _indigo.withOpacity(0.7)),
+                        ),
                       ),
-                    ],
-                  ),
+                    );
+                  }).toList(),
+                ),
+                SizedBox(height: 28.h),
+
+                // ─── Activity Status ───
+                _sectionLabel('Chneya ta3mel fi 7yetek ?'),
+                SizedBox(height: 10.h),
+                Column(
+                  children: _activityLabels.entries.map((e) {
+                    final selected = state.activityStatus == e.key;
+                    return GestureDetector(
+                      onTap: () => context.read<OnboardingBloc>().add(ActivityStatusSelected(e.key)),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: EdgeInsets.only(bottom: 8.h),
+                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: selected ? _emerald.withOpacity(0.12) : Colors.white,
+                          borderRadius: BorderRadius.circular(14.r),
+                          border: Border.all(color: selected ? _emerald : _indigo.withOpacity(0.08)),
+                        ),
+                        child: Text(e.value, style: TextStyle(
+                          fontSize: 14.sp, fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                          color: selected ? _indigo : _indigo.withOpacity(0.6),
+                        )),
+                      ),
+                    );
+                  }).toList(),
                 ),
                 SizedBox(height: 24.h),
 
-                GlassCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Chneya ta3mel fi 7yetek ?", 
-                        style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.getPremiumText(context), fontSize: 16.sp)),
-                      SizedBox(height: 12.h),
-                      ...['STUDENT', 'PROFESSIONAL', 'UNEMPLOYED'].map((status) {
-                        final isSelected = state.activityStatus == status;
-                        return Theme(
-                          data: Theme.of(context).copyWith(unselectedWidgetColor: AppColors.getPremiumTextSecondary(context).withOpacity(0.3)),
-                          child: RadioListTile<String>(
-                            title: Text(status, style: TextStyle(color: AppColors.getPremiumText(context), fontSize: 14.sp)),
-                            value: status,
-                            activeColor: AppColors.primaryPurple,
-                            groupValue: state.activityStatus,
-                            contentPadding: EdgeInsets.zero,
-                            onChanged: (val) {
-                              context.read<OnboardingBloc>().add(ActivityStatusSelected(val!));
-                            },
+                // ─── Life Rhythm ───
+                _sectionLabel('Rythme mte3ek ?'),
+                SizedBox(height: 10.h),
+                Row(
+                  children: _rhythmOptions.entries.map((e) {
+                    final selected = state.lifeRhythm == e.key;
+                    return Expanded(
+                      child: GestureDetector(
+                        onTap: () => context.read<OnboardingBloc>().add(LifeRhythmSelected(e.key)),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          margin: EdgeInsets.only(right: e.key != 'IRREGULAR' ? 8.w : 0),
+                          padding: EdgeInsets.symmetric(vertical: 18.h),
+                          decoration: BoxDecoration(
+                            color: selected ? _sunflower.withOpacity(0.15) : Colors.white,
+                            borderRadius: BorderRadius.circular(14.r),
+                            border: Border.all(color: selected ? _sunflower : _indigo.withOpacity(0.08)),
                           ),
-                        );
-                      }).toList(),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 24.h),
-
-                GlassCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Rythme mte3ek ?", 
-                        style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.getPremiumText(context), fontSize: 16.sp)),
-                      SizedBox(height: 16.h),
-                      Row(
-                        children: [
-                          Expanded(child: _buildRhythmCard(context, 'MORNING_PERSON', Icons.wb_sunny, state.lifeRhythm)),
-                          SizedBox(width: 16.w),
-                          Expanded(child: _buildRhythmCard(context, 'NIGHT_OWL', Icons.nights_stay, state.lifeRhythm)),
-                        ],
+                          child: Center(child: Text(e.value, style: TextStyle(
+                            fontSize: 12.sp, fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                            color: selected ? _indigo : _indigo.withOpacity(0.55),
+                          ), textAlign: TextAlign.center)),
+                        ),
                       ),
-                    ],
-                  ),
+                    );
+                  }).toList(),
                 ),
+                SizedBox(height: 36.h),
 
-                SizedBox(height: 48.h),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: onNext,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryPurple,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 18.h),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                      backgroundColor: _sapphire, foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)), elevation: 0,
                     ),
-                    child: Text("Suivant", style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Text("Suivant", style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                      SizedBox(width: 8.w), Icon(Icons.arrow_forward_rounded, size: 18.sp),
+                    ]),
                   ),
                 ),
                 SizedBox(height: 24.h),
@@ -137,37 +153,6 @@ class CornerPage extends StatelessWidget {
     );
   }
 
-  Widget _buildRhythmCard(BuildContext context, String value, IconData icon, String? groupValue) {
-    final isSelected = groupValue == value;
-    return GestureDetector(
-      onTap: () => context.read<OnboardingBloc>().add(LifeRhythmSelected(value)),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryPurple.withOpacity(0.2) : AppColors.getGlassColor(context).withOpacity(0.05),
-          border: Border.all(
-            color: isSelected ? AppColors.primaryPurple : AppColors.getGlassBorder(context),
-            width: 2,
-          ),
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 32.sp, color: isSelected ? AppColors.primaryPurple : AppColors.getPremiumTextSecondary(context).withOpacity(0.5)),
-            SizedBox(height: 12.h),
-            Text(
-              value == 'MORNING_PERSON' ? 'Matin' : 'Soir', 
-              style: TextStyle(
-                fontWeight: FontWeight.bold, 
-                color: isSelected ? (Theme.of(context).brightness == Brightness.dark ? Colors.white : AppColors.primaryPurple) : AppColors.getPremiumTextSecondary(context).withOpacity(0.5),
-                fontSize: 13.sp,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _sectionLabel(String text) =>
+    Text(text, style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w700, color: _indigo));
 }
-

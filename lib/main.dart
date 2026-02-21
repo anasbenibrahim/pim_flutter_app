@@ -13,6 +13,7 @@ import 'features/auth/bloc/auth_state.dart';
 import 'features/auth/pages/get_started_page.dart';
 import 'features/navigation/pages/main_navigation_page.dart';
 import 'features/onboarding/pages/onboarding_wrapper_page.dart';
+import 'features/welcome/pages/welcome_carousel_page.dart';
 import 'core/controllers/theme_controller.dart';
 
 void main() async {
@@ -55,7 +56,7 @@ class MyApp extends StatelessWidget {
                 } else if (state is AuthOnboardingRequired) {
                   return const OnboardingWrapperPage();
                 } else {
-                  return const GetStartedPage();
+                  return const WelcomeCarouselPage();
                 }
               },
             ),

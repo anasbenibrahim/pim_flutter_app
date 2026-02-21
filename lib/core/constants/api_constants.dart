@@ -50,4 +50,5 @@ class ApiConstants {
   static const String updateFamilyMemberProfile = '/auth/profile/family';
   // Onboarding endpoints
   static const String completeOnboarding = '/v1/onboarding/complete';
+  static const String completeAssessment = '/v1/onboarding/assessment';
 }

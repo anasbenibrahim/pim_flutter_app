@@ -4,96 +4,89 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
-import '../../../core/widgets/premium_widgets.dart';
-import '../../../core/theme/app_colors.dart';
+
+const _sapphire  = Color(0xFF0D6078);
+const _linen     = Color(0xFFF2EBE1);
+const _indigo    = Color(0xFF022F40);
+const _brick     = Color(0xFFF9623E);
+const _emerald   = Color(0xFF46C67D);
+const _sunflower = Color(0xFFF8C929);
 
 class StrengthsPage extends StatelessWidget {
   final VoidCallback onNext;
 
   const StrengthsPage({super.key, required this.onNext});
 
+  static const _triggers = ['Stress', 'Solitude', 'Fête', 'Ennui', 'Colère', 'Fatigue', 'Pression sociale', 'Insomnie'];
+  static const _coping = ['Sport', 'Musique', 'Méditation', 'Ami', 'Lire', 'Dormir', 'Prière', 'Nature'];
+  static const _motivations = ['Santé', 'Famille', 'Argent', 'Travail', 'Estime', 'Liberté', 'Avenir enfants', 'Spiritualité'];
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: _linen,
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+              padding: EdgeInsets.fromLTRB(28.w, 16.h, 28.w, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Tes Forces",
-                    style: TextStyle(fontSize: 28.sp, fontWeight: FontWeight.bold, color: AppColors.getPremiumText(context)),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    "Identifie ce qui t'aide et ce qui te freine.",
-                    style: TextStyle(color: AppColors.getPremiumTextSecondary(context), fontSize: 14.sp),
-                  ),
+                  Text("Tes Forces", style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w800, color: _indigo, letterSpacing: -0.5)),
+                  SizedBox(height: 6.h),
+                  Text("Identifie ce qui t'aide et ce qui te freine.",
+                    style: TextStyle(color: _indigo.withOpacity(0.5), fontSize: 14.sp)),
                 ],
               ),
             ),
-            
+            SizedBox(height: 16.h),
+
+            // Tab Bar
             TabBar(
-              indicatorColor: AppColors.primaryPurple,
+              indicatorColor: _sapphire,
               indicatorWeight: 3,
-              labelColor: AppColors.getPremiumText(context),
-              unselectedLabelColor: AppColors.getPremiumTextSecondary(context).withOpacity(0.5),
-              dividerColor: Colors.transparent,
-              labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),
+              labelColor: _indigo,
+              unselectedLabelColor: _indigo.withOpacity(0.35),
+              dividerColor: _indigo.withOpacity(0.06),
+              labelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.sp),
+              unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 13.sp),
               tabs: const [
                 Tab(text: "Déclencheurs"),
                 Tab(text: "Coping"),
                 Tab(text: "Motivation"),
               ],
             ),
-            
+
+            // Tab Content
             Expanded(
               child: TabBarView(
                 children: [
-                  _buildSelectionGrid(
-                    context, 
-                    ['Stress', 'Solitude', 'Fête', 'Ennui', 'Colère', 'Fatigue'], 
-                    (state) => state.triggers,
-                    (item) => TriggerToggled(item)
-                  ),
-                  _buildSelectionGrid(
-                    context, 
-                    ['Sport', 'Musique', 'Méditation', 'Ami', 'Lire', 'Dormir'], 
-                    (state) => state.copingMechanisms,
-                    (item) => CopingMechanismToggled(item)
-                  ),
-                  _buildSelectionGrid(
-                    context, 
-                    ['Santé', 'Famille', 'Argent', 'Travail', 'Estime', 'Liberté'], 
-                    (state) => state.motivations,
-                    (item) => MotivationToggled(item)
-                  ),
+                  _buildGrid(context, _triggers, (s) => s.triggers, (item) => TriggerToggled(item), _brick),
+                  _buildGrid(context, _coping, (s) => s.copingMechanisms, (item) => CopingMechanismToggled(item), _emerald),
+                  _buildGrid(context, _motivations, (s) => s.motivations, (item) => MotivationToggled(item), _sunflower),
                 ],
               ),
             ),
 
+            // Button
             Padding(
-              padding: EdgeInsets.all(24.w),
+              padding: EdgeInsets.fromLTRB(28.w, 8.h, 28.w, 28.h),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: onNext,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryPurple,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 18.h),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                    backgroundColor: _sapphire, foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)), elevation: 0,
                   ),
-                  child: Text(
-                    "Suivant", 
-                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-                  ),
+                  child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Text("Suivant", style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                    SizedBox(width: 8.w), Icon(Icons.arrow_forward_rounded, size: 18.sp),
+                  ]),
                 ),
               ),
             ),
@@ -103,11 +96,12 @@ class StrengthsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSelectionGrid(
-    BuildContext context, 
-    List<String> items, 
+  Widget _buildGrid(
+    BuildContext context,
+    List<String> items,
     List<String> Function(OnboardingState) selector,
-    OnboardingEvent Function(String) eventFactory
+    OnboardingEvent Function(String) eventFactory,
+    Color accentColor,
   ) {
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
@@ -115,33 +109,28 @@ class StrengthsPage extends StatelessWidget {
         return GridView.builder(
           padding: EdgeInsets.all(24.w),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 2.2,
-            crossAxisSpacing: 16.w,
-            mainAxisSpacing: 16.h,
+            crossAxisCount: 2, childAspectRatio: 2.4,
+            crossAxisSpacing: 12.w, mainAxisSpacing: 12.h,
           ),
           itemCount: items.length,
           itemBuilder: (context, index) {
             final item = items[index];
-            final isSelected = selectedItems.contains(item);
+            final selected = selectedItems.contains(item);
             return GestureDetector(
               onTap: () => context.read<OnboardingBloc>().add(eventFactory(item)),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primaryPurple.withOpacity(0.2) : AppColors.getGlassColor(context).withOpacity(0.05),
-                  border: Border.all(
-                    color: isSelected ? AppColors.primaryPurple : AppColors.getGlassBorder(context),
-                    width: isSelected ? 2 : 1,
-                  ),
-                  borderRadius: BorderRadius.circular(16.r),
+                  color: selected ? accentColor.withOpacity(0.12) : Colors.white,
+                  border: Border.all(color: selected ? accentColor : _indigo.withOpacity(0.08), width: selected ? 2 : 1),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   item,
                   style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected ? (Theme.of(context).brightness == Brightness.dark ? Colors.white : AppColors.primaryPurple) : AppColors.getPremiumTextSecondary(context),
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: selected ? _indigo : _indigo.withOpacity(0.5),
                     fontSize: 14.sp,
                   ),
                 ),
@@ -153,4 +142,3 @@ class StrengthsPage extends StatelessWidget {
     );
   }
 }
-

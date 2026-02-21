@@ -568,4 +568,56 @@ class ApiService {
       throw Exception(error['message'] ?? 'Failed to complete onboarding');
     }
   }
+
+  Future<void> submitAssessment({
+    String? gender,
+    String? healthGoal,
+    int? moodLevel,
+    int? sleepQuality,
+    int? stressLevel,
+    bool? soughtProfessionalHelp,
+    bool? takingMedications,
+    String? medications,
+    bool? physicalDistress,
+    List<String>? symptoms,
+    List<String>? personalityTraits,
+    List<String>? mentalHealthConcerns,
+  }) async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+
+    final response = await http.post(
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.completeAssessment}'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $_accessToken',
+      },
+      body: jsonEncode({
+        'gender': gender,
+        'healthGoal': healthGoal,
+        'moodLevel': moodLevel,
+        'sleepQuality': sleepQuality,
+        'stressLevel': stressLevel,
+        'soughtProfessionalHelp': soughtProfessionalHelp,
+        'takingMedications': takingMedications,
+        'medications': medications,
+        'physicalDistress': physicalDistress,
+        'symptoms': symptoms,
+        'personalityTraits': personalityTraits,
+        'mentalHealthConcerns': mentalHealthConcerns,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      String message = 'Failed to submit assessment';
+      try {
+        final error = jsonDecode(response.body);
+        message = error['message'] ?? message;
+      } catch (_) {
+        // Backend might return HTML error page instead of JSON
+        message = 'An unexpected error occurred: ${response.body.length > 200 ? response.body.substring(0, 200) : response.body}';
+      }
+      throw Exception(message);
+    }
+  }
 }

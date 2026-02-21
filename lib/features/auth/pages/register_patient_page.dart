@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:pimapp/core/theme/app_colors.dart';
+import 'package:pimapp/core/widgets/premium_widgets.dart';
 import '../../../core/widgets/image_picker_widget.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/custom_dropdown_field.dart';

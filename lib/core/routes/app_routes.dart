@@ -14,6 +14,8 @@ import '../../features/profile/pages/profile_page.dart';
 import '../../features/profile/pages/update_profile_page.dart';
 import '../../features/navigation/pages/main_navigation_page.dart';
 import '../../features/onboarding/pages/onboarding_wrapper_page.dart';
+import '../../features/welcome/pages/welcome_carousel_page.dart';
+import '../../features/assessment/assessment_page.dart';
 
 class AppRoutes {
   static const String getStarted = '/get-started';
@@ -31,9 +33,14 @@ class AppRoutes {
   static const String updateProfile = '/update-profile';
   static const String mainNavigation = '/main-navigation';
   static const String onboarding = '/onboarding';
+  static const String welcome = '/welcome';
+  static const String assessment = '/assessment';
   
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case welcome:
+        return MaterialPageRoute(builder: (_) => const WelcomeCarouselPage());
+
       case getStarted:
         return MaterialPageRoute(builder: (_) => const GetStartedPage());
       
@@ -97,6 +104,9 @@ class AppRoutes {
 
       case onboarding:
         return MaterialPageRoute(builder: (_) => const OnboardingWrapperPage());
+
+      case assessment:
+        return MaterialPageRoute(builder: (_) => const AssessmentPage());
       
       default:
         return MaterialPageRoute(

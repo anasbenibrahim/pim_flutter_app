@@ -11,6 +11,8 @@ class UserModel {
   final DateTime? createdAt;
   final String? referralCode; // Only for patients
   final bool hasCompletedOnboarding;
+  final int profileCompletionScore;
+  final bool hasCompletedAssessment;
   // Patient information for family members
   final int? patientId;
   final String? patientNom;
@@ -29,6 +31,8 @@ class UserModel {
     this.createdAt,
     this.referralCode,
     this.hasCompletedOnboarding = false,
+    this.profileCompletionScore = 0,
+    this.hasCompletedAssessment = false,
     this.patientId,
     this.patientNom,
     this.patientPrenom,
@@ -50,6 +54,8 @@ class UserModel {
           : null,
       referralCode: json['referralCode'] as String?,
       hasCompletedOnboarding: json['hasCompletedOnboarding'] as bool? ?? false,
+      profileCompletionScore: json['profileCompletionScore'] as int? ?? 0,
+      hasCompletedAssessment: json['hasCompletedAssessment'] as bool? ?? false,
       patientId: json['patientId'] as int?,
       patientNom: json['patientNom'] as String?,
       patientPrenom: json['patientPrenom'] as String?,
@@ -72,6 +78,8 @@ class UserModel {
       'createdAt': createdAt?.toIso8601String(),
       'referralCode': referralCode,
       'hasCompletedOnboarding': hasCompletedOnboarding,
+      'profileCompletionScore': profileCompletionScore,
+      'hasCompletedAssessment': hasCompletedAssessment,
       'patientId': patientId,
       'patientNom': patientNom,
       'patientPrenom': patientPrenom,
