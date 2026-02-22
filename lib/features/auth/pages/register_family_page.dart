@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../core/widgets/image_picker_widget.dart';
+import '../../../core/widgets/qr_scanner_widget.dart';
 import '../../../core/routes/app_routes.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -55,6 +56,18 @@ class _RegisterFamilyPageState extends State<RegisterFamilyPage> {
           imagePath: _imagePath,
         ),
       );
+    }
+  }
+
+  Future<void> _openScanner() async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (context) => const QrScannerWidget()),
+    );
+    if (result != null) {
+      setState(() {
+        _referralKeyController.text = result;
+      });
     }
   }
 
@@ -163,7 +176,17 @@ class _RegisterFamilyPageState extends State<RegisterFamilyPage> {
                         ],
                       ),
                       SizedBox(height: 18.h),
-                      _field('Code de parrainage', 'Code du patient', _referralKeyController, icon: Icons.vpn_key_outlined, validator: (v) => (v == null || v.isEmpty) ? 'Code requis' : null),
+                      _field(
+                        'Code de parrainage', 
+                        'Code du patient', 
+                        _referralKeyController, 
+                        icon: Icons.vpn_key_outlined, 
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.qr_code_scanner_rounded, color: _sapphire, size: 24.sp),
+                          onPressed: _openScanner,
+                        ),
+                        validator: (v) => (v == null || v.isEmpty) ? 'Code requis' : null,
+                      ),
                       SizedBox(height: 18.h),
                       _field('Email', 'famille@email.com', _emailController, icon: Icons.email_outlined, keyboardType: TextInputType.emailAddress, validator: (v) {
                         if (v == null || v.isEmpty) return 'L\'email est requis';
@@ -234,7 +257,7 @@ class _RegisterFamilyPageState extends State<RegisterFamilyPage> {
     );
   }
 
-  Widget _field(String label, String hint, TextEditingController ctrl, {IconData? icon, TextInputType? keyboardType, String? Function(String?)? validator}) {
+  Widget _field(String label, String hint, TextEditingController ctrl, {IconData? icon, Widget? suffixIcon, TextInputType? keyboardType, String? Function(String?)? validator}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -244,18 +267,19 @@ class _RegisterFamilyPageState extends State<RegisterFamilyPage> {
           controller: ctrl,
           keyboardType: keyboardType,
           style: TextStyle(fontSize: 15.sp, color: _indigo),
-          decoration: _inputDeco(hint, icon),
+          decoration: _inputDeco(hint, icon, suffixIcon),
           validator: validator,
         ),
       ],
     );
   }
 
-  InputDecoration _inputDeco(String hint, [IconData? icon]) {
+  InputDecoration _inputDeco(String hint, [IconData? icon, Widget? suffixIcon]) {
     return InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(color: _indigo.withOpacity(0.25), fontSize: 15.sp),
       prefixIcon: icon != null ? Icon(icon, color: _sapphire, size: 20.sp) : null,
+      suffixIcon: suffixIcon,
       filled: true,
       fillColor: Colors.white,
       contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),

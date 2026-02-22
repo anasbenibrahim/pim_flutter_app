@@ -80,7 +80,11 @@ dependencies:
   
   # Animations & Haptics
   rive: ^0.13.0
-  vibration: ^1.9.0
+  vibration: ^3.1.7
+  
+  # QR Code
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^5.1.0
 
 dev_dependencies:
   flutter_test:

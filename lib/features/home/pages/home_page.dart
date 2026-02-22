@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_event.dart';
 import '../../auth/bloc/auth_state.dart';
@@ -14,6 +15,8 @@ import '../../../core/constants/api_constants.dart';
 
 import '../../../core/theme/app_colors.dart';
 
+const _sapphire  = Color(0xFF0D6078);
+const _indigo    = Color(0xFF022F40);
 const _sunflower = Color(0xFFF8C929);
 
 class HomePage extends StatefulWidget {
@@ -378,6 +381,45 @@ class _HomePageState extends State<HomePage> {
                   Expanded(
                     child: Text(code ?? 'Loading...', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w800, color: theme.colorScheme.primary, letterSpacing: 1.5)),
                   ),
+                  IconButton(
+                    icon: Icon(Icons.qr_code_2_rounded, size: 24.sp, color: theme.colorScheme.primary),
+                    onPressed: () {
+                      if (code != null) {
+                        showDialog(
+                          context: context,
+                          builder: (context) => Dialog(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+                            child: Padding(
+                              padding: EdgeInsets.all(24.w),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text("Mon Code QR", style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w800, color: _indigo)),
+                                  SizedBox(height: 20.h),
+                                  QrImageView(
+                                    data: code,
+                                    version: QrVersions.auto,
+                                    size: 200.w,
+                                    backgroundColor: Colors.white,
+                                    eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: _indigo),
+                                    dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: _sapphire),
+                                  ),
+                                  SizedBox(height: 20.h),
+                                  Text(code, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700, color: _sapphire)),
+                                  SizedBox(height: 24.h),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: Text("Fermer", style: TextStyle(color: _indigo.withOpacity(0.5))),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
                   Icon(Icons.copy_rounded, size: 18.sp, color: theme.colorScheme.onSurface.withOpacity(0.25)),
                 ],
               ),
@@ -488,7 +530,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
 
   Widget _buildMoodJourneyChart() {
     final theme = Theme.of(context);

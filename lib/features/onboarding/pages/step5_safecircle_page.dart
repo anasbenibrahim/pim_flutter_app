@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart';
 import '../bloc/onboarding_bloc.dart';
@@ -49,6 +50,39 @@ class SafeCirclePage extends StatelessWidget {
                         child: Icon(Icons.people_alt_rounded, size: 40.sp, color: _sapphire),
                       ),
                       SizedBox(height: 20.h),
+                      
+                      // QR Code section
+                      BlocBuilder<AuthBloc, AuthState>(
+                        builder: (context, authState) {
+                          String code = "";
+                          if (authState is AuthAuthenticated) {
+                            code = authState.user.referralCode ?? "";
+                          } else if (authState is AuthOnboardingRequired) {
+                            code = authState.user.referralCode ?? "";
+                          }
+                          
+                          if (code.isEmpty) return const SizedBox.shrink();
+                          
+                          return Container(
+                            padding: EdgeInsets.all(12.w),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16.r),
+                              border: Border.all(color: _sapphire.withOpacity(0.1)),
+                            ),
+                            child: QrImageView(
+                              data: code,
+                              version: QrVersions.auto,
+                              size: 160.w,
+                              backgroundColor: Colors.white,
+                              eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: _indigo),
+                              dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: _sapphire),
+                            ),
+                          );
+                        },
+                      ),
+                      
+                      SizedBox(height: 24.h),
                       Text("Ton Code de Parrainage", style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700, color: _indigo)),
                       SizedBox(height: 8.h),
                       Text(

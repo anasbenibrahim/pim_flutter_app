@@ -18,7 +18,7 @@ class ApiConstants {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       // Use your computer's local IP for physical devices and emulators
       // 10.0.2.2 only works for emulators. 192.168.1.16 is your PC's IP.
-      return 'http://192.168.1.16:8080/api';
+      return 'http://192.168.98.163:8080/api';
     } else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
       // iOS simulator can use localhost
       return 'http://localhost:8080/api';

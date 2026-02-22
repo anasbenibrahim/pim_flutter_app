@@ -1,5 +1,23 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vibration/vibration.dart';
 import '../../core/widgets/cosmic_background.dart';
+import '../../core/routes/app_routes.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/services/api_service.dart';
+import '../auth/bloc/auth_bloc.dart';
+import '../auth/bloc/auth_event.dart';
+import 'steps/q1_health_goal.dart';
+import 'steps/q2_gender.dart';
+import 'steps/q3_mood.dart';
+import 'steps/q4_sleep.dart';
+import 'steps/q5_stress.dart';
+import 'steps/q6_professional_help.dart';
+import 'steps/q7_medications.dart';
+import 'steps/q8_physical_distress.dart';
+import 'steps/q9_personality.dart';
+import 'steps/q10_mental_health.dart';
 
 class AssessmentPage extends StatefulWidget {
   const AssessmentPage({super.key});
@@ -217,6 +235,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
           ],
         ),
       ),
-    );
+    ),
+   );
   }
 }
