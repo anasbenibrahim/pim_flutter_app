@@ -51,4 +51,7 @@ class ApiConstants {
   // Onboarding endpoints
   static const String completeOnboarding = '/v1/onboarding/complete';
   static const String completeAssessment = '/v1/onboarding/assessment';
+  
+  // Game Log endpoints
+  static const String gameLogs = '/game-logs';
 }

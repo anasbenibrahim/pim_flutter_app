@@ -1,5 +1,23 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vibration/vibration.dart';
 import '../../core/widgets/cosmic_background.dart';
+import '../../core/services/api_service.dart';
+import '../auth/bloc/auth_bloc.dart';
+import '../auth/bloc/auth_event.dart';
+import '../../core/routes/app_routes.dart';
+import '../../core/theme/app_colors.dart';
+import 'steps/q1_health_goal.dart';
+import 'steps/q2_gender.dart';
+import 'steps/q3_mood.dart';
+import 'steps/q4_sleep.dart';
+import 'steps/q5_stress.dart';
+import 'steps/q6_professional_help.dart';
+import 'steps/q7_medications.dart';
+import 'steps/q8_physical_distress.dart';
+import 'steps/q9_personality.dart';
+import 'steps/q10_mental_health.dart';
 
 class AssessmentPage extends StatefulWidget {
   const AssessmentPage({super.key});
@@ -92,7 +110,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       body: CosmicBackground(
         zoom: 1.0 + (_currentPage * 0.05),
         child: SafeArea(
@@ -110,7 +128,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(14.r),
-                        border: theme.brightness == Brightness.dark ? Border.all(color: Colors.white.withOpacity(0.05)) : null,
+                        border: theme.brightness == Brightness.dark ? Border.all(color: Colors.white.withValues(alpha: 0.05)) : null,
                       ),
                       child: Icon(
                         _currentPage > 0
@@ -126,7 +144,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.08),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20.r),
                     ),
                     child: Text(
@@ -157,7 +175,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.onSurface.withOpacity(0.05),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                         ),
@@ -217,6 +235,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

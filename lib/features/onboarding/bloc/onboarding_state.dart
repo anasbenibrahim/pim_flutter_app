@@ -17,6 +17,21 @@ class OnboardingState extends Equatable {
   final List<String> copingMechanisms;
   final List<String> motivations;
 
+  // New gamified fields
+  final String? username;
+  final bool prenamePrivate;
+  final List<String> hobbies;
+  final String? usageDuration;
+  final String? referralCode;
+
+  // Registration fields
+  final String? email;
+  final String? password;
+  final String? nom;
+  final String? prenom;
+  final DateTime? dateNaissance;
+  final String? imagePath;
+
   const OnboardingState({
     this.status = OnboardingStatus.initial,
     this.errorMessage,
@@ -29,6 +44,17 @@ class OnboardingState extends Equatable {
     this.triggers = const [],
     this.copingMechanisms = const [],
     this.motivations = const [],
+    this.username,
+    this.prenamePrivate = false,
+    this.hobbies = const [],
+    this.usageDuration,
+    this.referralCode,
+    this.email,
+    this.password,
+    this.nom,
+    this.prenom,
+    this.dateNaissance,
+    this.imagePath,
   });
 
   OnboardingState copyWith({
@@ -43,6 +69,17 @@ class OnboardingState extends Equatable {
     List<String>? triggers,
     List<String>? copingMechanisms,
     List<String>? motivations,
+    String? username,
+    bool? prenamePrivate,
+    List<String>? hobbies,
+    String? usageDuration,
+    String? referralCode,
+    String? email,
+    String? password,
+    String? nom,
+    String? prenom,
+    DateTime? dateNaissance,
+    String? imagePath,
   }) {
     return OnboardingState(
       status: status ?? this.status,
@@ -56,6 +93,17 @@ class OnboardingState extends Equatable {
       triggers: triggers ?? this.triggers,
       copingMechanisms: copingMechanisms ?? this.copingMechanisms,
       motivations: motivations ?? this.motivations,
+      username: username ?? this.username,
+      prenamePrivate: prenamePrivate ?? this.prenamePrivate,
+      hobbies: hobbies ?? this.hobbies,
+      usageDuration: usageDuration ?? this.usageDuration,
+      referralCode: referralCode ?? this.referralCode,
+      email: email ?? this.email,
+      password: password ?? this.password,
+      nom: nom ?? this.nom,
+      prenom: prenom ?? this.prenom,
+      dateNaissance: dateNaissance ?? this.dateNaissance,
+      imagePath: imagePath ?? this.imagePath,
     );
   }
 
@@ -72,5 +120,16 @@ class OnboardingState extends Equatable {
         triggers,
         copingMechanisms,
         motivations,
+        username,
+        prenamePrivate,
+        hobbies,
+        usageDuration,
+        referralCode,
+        email,
+        password,
+        nom,
+        prenom,
+        dateNaissance,
+        imagePath,
       ];
 }

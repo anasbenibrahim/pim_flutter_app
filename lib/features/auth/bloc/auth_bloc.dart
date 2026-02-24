@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/user_role.dart';
 import '../../../core/services/api_service.dart';
@@ -33,6 +34,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       await apiService.login(event.email, event.password);
       final user = await apiService.getCurrentUser();
+      
+      // Prevent mood leakage when manually logging into a different account
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('hopi_active_mood_state');
+      
       _emitAuthenticated(user, emit);
     } catch (e) {
       emit(AuthError(message: e.toString()));
@@ -40,11 +46,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   void _emitAuthenticated(UserModel user, Emitter<AuthState> emit) {
-    if (user.role == UserRole.patient && !user.hasCompletedOnboarding) {
-      emit(AuthOnboardingRequired(user: user));
-    } else {
-      emit(AuthAuthenticated(user: user));
-    }
+    emit(AuthAuthenticated(user: user));
   }
   
   Future<void> _onRegisterPatient(
@@ -63,6 +65,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         sobrietyDate: event.sobrietyDate,
         addiction: event.addiction?.value,
         imagePath: event.imagePath,
+        username: event.username,
+        prenamePrivate: event.prenamePrivate,
+        usageDuration: event.usageDuration,
+        hobbies: event.hobbies,
+        triggers: event.triggers,
+        copingMechanisms: event.copingMechanisms,
+        motivations: event.motivations,
       );
       // Emit OTP sent state with registration data
       emit(RegistrationOtpSentState(
@@ -151,6 +160,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   
   Future<void> _onLogout(LogoutEvent event, Emitter<AuthState> emit) async {
     await apiService.clearTokens();
+    
+    // Clear the cached Hopi mood state on logout globally
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('hopi_active_mood_state');
+    
     emit(const AuthUnauthenticated());
   }
   
@@ -303,6 +317,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         imagePath: event.imagePath,
       );
       final user = await apiService.getCurrentUser();
+      
+      // Prevent mood leakage when registering a brand new account
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('hopi_active_mood_state');
+      
       _emitAuthenticated(user, emit);
     } catch (e) {
       emit(AuthError(message: e.toString()));

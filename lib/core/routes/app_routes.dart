@@ -16,6 +16,8 @@ import '../../features/navigation/pages/main_navigation_page.dart';
 import '../../features/onboarding/pages/onboarding_wrapper_page.dart';
 import '../../features/welcome/pages/welcome_carousel_page.dart';
 import '../../features/assessment/assessment_page.dart';
+import '../../features/game/pages/game_selection_page.dart';
+import '../../features/game/pages/focus_garden_game_page.dart';
 
 class AppRoutes {
   static const String getStarted = '/get-started';
@@ -35,6 +37,8 @@ class AppRoutes {
   static const String onboarding = '/onboarding';
   static const String welcome = '/welcome';
   static const String assessment = '/assessment';
+  static const String gameSelection = '/game-selection';
+  static const String focusGardenGame = '/focus-garden-game';
   
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -107,6 +111,12 @@ class AppRoutes {
 
       case assessment:
         return MaterialPageRoute(builder: (_) => const AssessmentPage());
+
+      case gameSelection:
+        return MaterialPageRoute(builder: (_) => const GameSelectionPage());
+        
+      case focusGardenGame:
+        return MaterialPageRoute(builder: (_) => const FocusGardenGamePage());
       
       default:
         return MaterialPageRoute(

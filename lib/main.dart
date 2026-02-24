@@ -4,13 +4,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'core/theme/app_colors.dart';
+import 'core/theme/hopi_theme.dart';
 import 'core/services/api_service.dart';
 import 'core/routes/app_routes.dart';
 import 'features/auth/bloc/auth_bloc.dart';
 import 'features/auth/bloc/auth_event.dart';
 import 'features/auth/bloc/auth_state.dart';
 import 'features/auth/pages/get_started_page.dart';
+import 'features/hopi/cubit/hopi_cubit.dart';
+import 'features/hopi/cubit/hopi_state.dart';
 import 'features/navigation/pages/main_navigation_page.dart';
 import 'features/onboarding/pages/onboarding_wrapper_page.dart';
 import 'features/welcome/pages/welcome_carousel_page.dart';
@@ -39,27 +41,45 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return BlocProvider(
-          create: (context) => AuthBloc(apiService: ApiService())
-            ..add(const CheckAuthEvent()),
-          child: GetMaterialApp(
-            title: 'PIM App',
-            debugShowCheckedModeBanner: false,
-            theme: AppColors.getLightTheme(),
-            darkTheme: AppColors.getDarkTheme(),
-            themeMode: ThemeMode.system,
-            onGenerateRoute: AppRoutes.generateRoute,
-            home: BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, state) {
-                if (state is AuthAuthenticated) {
-                  return const MainNavigationPage();
-                } else if (state is AuthOnboardingRequired) {
-                  return const OnboardingWrapperPage();
-                } else {
-                  return const WelcomeCarouselPage();
-                }
-              },
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => AuthBloc(apiService: ApiService())
+                ..add(const CheckAuthEvent()),
             ),
+            BlocProvider(
+              create: (context) => HopiCubit(),
+            ),
+          ],
+          child: BlocBuilder<HopiCubit, HopiStateData>(
+            builder: (context, hopiState) {
+              return GetMaterialApp(
+                title: 'HopeUp',
+                debugShowCheckedModeBanner: false,
+                theme: HopiTheme.fromMood(hopiState.mood),
+                darkTheme: HopiTheme.darkFromMood(hopiState.mood),
+                themeMode: ThemeMode.system,
+                onGenerateRoute: AppRoutes.generateRoute,
+                home: BlocListener<AuthBloc, AuthState>(
+                  listener: (context, state) {
+                    if (state is AuthUnauthenticated) {
+                      context.read<HopiCubit>().reset();
+                    }
+                  },
+                  child: BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      if (state is AuthAuthenticated) {
+                        return const MainNavigationPage();
+                      } else if (state is AuthOnboardingRequired) {
+                        return const OnboardingWrapperPage();
+                      } else {
+                        return const WelcomeCarouselPage();
+                      }
+                    },
+                  ),
+                ),
+              );
+            },
           ),
         );
       },

@@ -20,6 +20,12 @@ class UserModel {
   final String? addiction;
   final DateTime? sobrietyDate;
   
+  // New gamified fields
+  final String? username;
+  final bool prenamePrivate;
+  final List<String> hobbies;
+  final String? usageDuration;
+  
   UserModel({
     required this.id,
     required this.email,
@@ -38,7 +44,31 @@ class UserModel {
     this.patientPrenom,
     this.addiction,
     this.sobrietyDate,
+    this.username,
+    this.prenamePrivate = false,
+    this.hobbies = const [],
+    this.usageDuration,
   });
+  
+  static DateTime? _parseDate(dynamic dateData) {
+    if (dateData == null) return null;
+    if (dateData is String) {
+      try {
+        return DateTime.parse(dateData);
+      } catch (_) {
+        return null;
+      }
+    }
+    // Handle Jackson array serialization [2024, 5, 20]
+    if (dateData is List && dateData.length >= 3) {
+      return DateTime(
+        dateData[0] as int,
+        dateData[1] as int,
+        dateData[2] as int,
+      );
+    }
+    return null;
+  }
   
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -60,9 +90,11 @@ class UserModel {
       patientNom: json['patientNom'] as String?,
       patientPrenom: json['patientPrenom'] as String?,
       addiction: json['addiction'] as String?,
-      sobrietyDate: json['sobrietyDate'] != null 
-          ? DateTime.parse(json['sobrietyDate'] as String)
-          : null,
+      sobrietyDate: _parseDate(json['sobrietyDate']),
+      username: json['username'] as String?,
+      prenamePrivate: json['prenamePrivate'] as bool? ?? false,
+      hobbies: (json['hobbies'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      usageDuration: json['usageDuration'] as String?,
     );
   }
   
@@ -85,6 +117,10 @@ class UserModel {
       'patientPrenom': patientPrenom,
       'addiction': addiction,
       'sobrietyDate': sobrietyDate?.toIso8601String(),
+      'username': username,
+      'prenamePrivate': prenamePrivate,
+      'hobbies': hobbies,
+      'usageDuration': usageDuration,
     };
   }
 }

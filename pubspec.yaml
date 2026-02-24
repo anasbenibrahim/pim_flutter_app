@@ -110,6 +110,8 @@ flutter:
     - assets/images/mood emotions/
     - assets/images/design elements/
     - assets/images/shapes/
+    - assets/hopi/
+    - assets/hopi/animation videos/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

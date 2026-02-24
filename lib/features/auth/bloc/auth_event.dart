@@ -29,6 +29,15 @@ class RegisterPatientEvent extends AuthEvent {
   final AddictionType? addiction;
   final String? imagePath;
   
+  // Gamified Onboarding Fields
+  final String? username;
+  final bool prenamePrivate;
+  final String? usageDuration;
+  final List<String> hobbies;
+  final List<String> triggers;
+  final List<String> copingMechanisms;
+  final List<String> motivations;
+  
   const RegisterPatientEvent({
     required this.email,
     required this.password,
@@ -39,6 +48,13 @@ class RegisterPatientEvent extends AuthEvent {
     this.sobrietyDate,
     this.addiction,
     this.imagePath,
+    this.username,
+    this.prenamePrivate = false,
+    this.usageDuration,
+    this.hobbies = const [],
+    this.triggers = const [],
+    this.copingMechanisms = const [],
+    this.motivations = const [],
   });
   
   @override
@@ -52,6 +68,13 @@ class RegisterPatientEvent extends AuthEvent {
     sobrietyDate,
     addiction,
     imagePath,
+    username,
+    prenamePrivate,
+    usageDuration,
+    hobbies,
+    triggers,
+    copingMechanisms,
+    motivations,
   ];
 }
 

@@ -71,6 +71,13 @@ class ApiService {
     DateTime? sobrietyDate,
     String? addiction,
     String? imagePath,
+    String? username,
+    bool prenamePrivate = false,
+    String? usageDuration,
+    List<String> hobbies = const [],
+    List<String> triggers = const [],
+    List<String> copingMechanisms = const [],
+    List<String> motivations = const [],
   }) async {
     try {
       var request = http.MultipartRequest(
@@ -88,6 +95,13 @@ class ApiService {
         'dateNaissance': dateNaissance.toIso8601String().split('T')[0],
         'sobrietyDate': sobrietyDate?.toIso8601String().split('T')[0],
         'addiction': addiction,
+        'username': username,
+        'prenamePrivate': prenamePrivate,
+        'usageDuration': usageDuration,
+        'hobbies': hobbies,
+        'triggers': triggers,
+        'copingMechanisms': copingMechanisms,
+        'motivations': motivations,
       };
       
       // Add JSON data as a field
@@ -526,12 +540,15 @@ class ApiService {
     List<String>? triggers,
     List<String>? copingMechanisms,
     List<String>? motivations,
+    String? username,
+    bool? prenamePrivate,
+    String? usageDuration,
+    List<String>? hobbies,
   }) async {
     await _loadTokens();
     if (_accessToken == null) throw Exception('Not authenticated');
 
-    print('DEBUG: Request URL: ${ApiConstants.baseUrl}${ApiConstants.completeOnboarding}');
-    print('DEBUG: Request Body: ${jsonEncode({
+    final body = {
       'sobrietyDate': sobrietyDate?.toIso8601String().split('T')[0],
       'addiction': substance,
       'lifeRhythm': lifeRhythm,
@@ -540,7 +557,11 @@ class ApiService {
       'triggers': triggers,
       'copingMechanisms': copingMechanisms,
       'motivations': motivations,
-    })}');
+      'username': username,
+      'prenamePrivate': prenamePrivate,
+      'usageDuration': usageDuration,
+      'hobbies': hobbies,
+    };
 
     final response = await http.post(
       Uri.parse('${ApiConstants.baseUrl}${ApiConstants.completeOnboarding}'),
@@ -548,20 +569,8 @@ class ApiService {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $_accessToken',
       },
-      body: jsonEncode({
-        'sobrietyDate': sobrietyDate?.toIso8601String().split('T')[0],
-        'addiction': substance,
-        'lifeRhythm': lifeRhythm,
-        'activityStatus': activityStatus,
-        'region': region,
-        'triggers': triggers,
-        'copingMechanisms': copingMechanisms,
-        'motivations': motivations,
-      }),
+      body: jsonEncode(body),
     );
-
-    print('DEBUG: Response Status Code: ${response.statusCode}');
-    print('DEBUG: Response Body: ${response.body}');
 
     if (response.statusCode != 200) {
       final error = jsonDecode(response.body);
@@ -616,6 +625,39 @@ class ApiService {
       } catch (_) {
         // Backend might return HTML error page instead of JSON
         message = 'An unexpected error occurred: ${response.body.length > 200 ? response.body.substring(0, 200) : response.body}';
+      }
+      throw Exception(message);
+    }
+  }
+
+  Future<void> saveGameLog({
+    required String gameType,
+    required List<int> rawData,
+    required String derivedState,
+  }) async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+
+    final response = await http.post(
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.gameLogs}'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $_accessToken',
+      },
+      body: jsonEncode({
+        'gameType': gameType,
+        'rawData': rawData,
+        'derivedState': derivedState,
+      }),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      String message = 'Failed to save game log';
+      try {
+        final error = jsonDecode(response.body);
+        message = error['message'] ?? message;
+      } catch (_) {
+        message = 'An error occurred: ${response.body}';
       }
       throw Exception(message);
     }

@@ -7,9 +7,9 @@ import '../../profile/pages/profile_page.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart';
 
-const _sapphire  = Color(0xFF0D6078);
-const _linen     = Color(0xFFF2EBE1);
-const _indigo    = Color(0xFF022F40);
+const _indigo = Color(0xFF022F40);
+const _linen  = Color(0xFFF2EBE1);
+const _emerald = Color(0xFF46C67D);
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
@@ -27,9 +27,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         String? profileImageUrl;
@@ -47,16 +44,15 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             margin: EdgeInsets.fromLTRB(48.w, 0, 48.w, 28.h),
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(22.r),
+              color: _indigo,
+              borderRadius: BorderRadius.circular(30.r),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.black.withOpacity(0.3) : theme.colorScheme.onSurface.withOpacity(0.06),
+                  color: Colors.black.withOpacity(0.3),
                   blurRadius: 24,
                   offset: const Offset(0, 8),
                 ),
               ],
-              border: isDark ? Border.all(color: Colors.white.withOpacity(0.05), width: 1) : null,
             ),
             child: Row(
               children: [
@@ -71,12 +67,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   }
 
   Widget _buildTab(BuildContext context, {required int index, required IconData icon, required String label, String? profileImageUrl}) {
-    final theme = Theme.of(context);
     final isActive = _currentIndex == index;
-    final activeColor = theme.colorScheme.primary;
-    final inactiveColor = theme.colorScheme.onSurface.withOpacity(0.3);
+    final activeColor = _emerald;
+    final inactiveColor = _linen.withOpacity(0.4);
 
-    // For profile tab with image
     Widget iconWidget;
     if (profileImageUrl != null && index == 1) {
       final baseUrl = ApiConstants.baseUrl.replaceAll('/api', '');
@@ -85,7 +79,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         width: 22.w, height: 22.w,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: isActive ? activeColor : inactiveColor.withOpacity(0.15), width: 1.5),
+          border: Border.all(color: isActive ? activeColor : inactiveColor.withOpacity(0.3), width: 1.5),
         ),
         child: ClipOval(
           child: Image.network(url, fit: BoxFit.cover,
@@ -104,8 +98,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           duration: const Duration(milliseconds: 250),
           padding: EdgeInsets.symmetric(vertical: 10.h),
           decoration: BoxDecoration(
-            color: isActive ? activeColor.withOpacity(0.08) : Colors.transparent,
-            borderRadius: BorderRadius.circular(16.r),
+            color: isActive ? activeColor.withOpacity(0.15) : Colors.transparent,
+            borderRadius: BorderRadius.circular(22.r),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

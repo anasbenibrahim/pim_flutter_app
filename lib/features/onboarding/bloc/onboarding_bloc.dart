@@ -61,6 +61,58 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       emit(state.copyWith(motivations: updatedData));
     });
 
+    // ─── New Gamified Handlers ───
+
+    on<EmailChanged>((event, emit) {
+      emit(state.copyWith(email: event.email));
+    });
+
+    on<PasswordChanged>((event, emit) {
+      emit(state.copyWith(password: event.password));
+    });
+
+    on<NomChanged>((event, emit) {
+      emit(state.copyWith(nom: event.nom));
+    });
+
+    on<PrenomChanged>((event, emit) {
+      emit(state.copyWith(prenom: event.prenom));
+    });
+
+    on<DateNaissanceChanged>((event, emit) {
+      emit(state.copyWith(dateNaissance: event.date));
+    });
+
+    on<ImagePathChanged>((event, emit) {
+      emit(state.copyWith(imagePath: event.path));
+    });
+
+    on<UsernameChanged>((event, emit) {
+      emit(state.copyWith(username: event.username));
+    });
+
+    on<PrenamePrivacyToggled>((event, emit) {
+      emit(state.copyWith(prenamePrivate: !state.prenamePrivate));
+    });
+
+    on<HobbyToggled>((event, emit) {
+      final updated = List<String>.from(state.hobbies);
+      if (updated.contains(event.hobby)) {
+        updated.remove(event.hobby);
+      } else {
+        updated.add(event.hobby);
+      }
+      emit(state.copyWith(hobbies: updated));
+    });
+
+    on<UsageDurationSelected>((event, emit) {
+      emit(state.copyWith(usageDuration: event.duration));
+    });
+
+    on<ReferralCodeChanged>((event, emit) {
+      emit(state.copyWith(referralCode: event.code));
+    });
+
     on<OnboardingSubmitted>(_onSubmit);
   }
 
@@ -71,10 +123,6 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     emit(state.copyWith(status: OnboardingStatus.loading));
 
     try {
-      print('DEBUG: Sending onboarding data...');
-      print('DEBUG: Region: ${state.region}');
-      print('DEBUG: Addiction: ${state.substance}');
-      
       await apiService.completeOnboarding(
         sobrietyDate: state.sobrietyDate,
         substance: state.substance,
@@ -84,12 +132,14 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         triggers: state.triggers,
         copingMechanisms: state.copingMechanisms,
         motivations: state.motivations,
+        username: state.username,
+        prenamePrivate: state.prenamePrivate,
+        usageDuration: state.usageDuration,
+        hobbies: state.hobbies,
       );
       
-      print('DEBUG: Onboarding submission SUCCESS');
       emit(state.copyWith(status: OnboardingStatus.success));
     } catch (e) {
-      print('DEBUG: Onboarding submission FAILED: $e');
       emit(state.copyWith(
         status: OnboardingStatus.failure,
         errorMessage: e.toString(),
