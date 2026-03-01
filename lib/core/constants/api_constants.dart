@@ -51,4 +51,16 @@ class ApiConstants {
   // Onboarding endpoints
   static const String completeOnboarding = '/v1/onboarding/complete';
   static const String completeAssessment = '/v1/onboarding/assessment';
+
+  // Social endpoints
+  static const String socialPosts = '/v1/social/posts';
+  static const String socialCommentsBase = '/v1/social/comments';
+  
+  static String get wsUrl {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      return 'ws://192.168.98.163:8080/ws/social';
+    } else {
+      return 'ws://localhost:8080/ws/social';
+    }
+  }
 }

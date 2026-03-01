@@ -17,6 +17,9 @@ import '../../features/onboarding/pages/onboarding_wrapper_page.dart';
 import '../../features/welcome/pages/welcome_carousel_page.dart';
 import '../../features/assessment/assessment_page.dart';
 import '../../features/notifications/pages/notifications_page.dart';
+import '../../features/social/presentation/pages/social_feed_page.dart';
+import '../../features/social/presentation/pages/create_post_page.dart';
+import '../../features/social/presentation/pages/post_detail_page.dart';
 
 class AppRoutes {
   static const String getStarted = '/get-started';
@@ -37,6 +40,11 @@ class AppRoutes {
   static const String welcome = '/welcome';
   static const String assessment = '/assessment';
   static const String notifications = '/notifications';
+  
+  // Social routes
+  static const String socialFeed = '/social-feed';
+  static const String createPost = '/create-post';
+  static const String postDetail = '/post-detail';
   
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -112,6 +120,18 @@ class AppRoutes {
       
       case notifications:
         return MaterialPageRoute(builder: (_) => const NotificationsPage());
+      
+      case socialFeed:
+        return MaterialPageRoute(builder: (_) => const SocialFeedPage());
+        
+      case createPost:
+        return MaterialPageRoute(builder: (_) => const CreatePostPage());
+        
+      case postDetail:
+        final postId = settings.arguments as int;
+        return MaterialPageRoute(
+          builder: (_) => PostDetailPage(postId: postId),
+        );
       
       default:
         return MaterialPageRoute(

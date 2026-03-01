@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../home/pages/home_page.dart';
+import '../../social/presentation/pages/social_feed_page.dart';
 import '../../profile/pages/profile_page.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart';
@@ -22,6 +23,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   final _pages = const [
     HomePage(key: ValueKey('home')),
+    SocialFeedPage(key: ValueKey('social')),
     ProfilePage(key: ValueKey('profile')),
   ];
 
@@ -61,7 +63,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             child: Row(
               children: [
                 _buildTab(context, index: 0, icon: Icons.home_rounded, label: 'Home'),
-                _buildTab(context, index: 1, icon: Icons.person_rounded, label: 'Profile', profileImageUrl: profileImageUrl),
+                _buildTab(context, index: 1, icon: Icons.forum_rounded, label: 'Social'),
+                _buildTab(context, index: 2, icon: Icons.person_rounded, label: 'Profile', profileImageUrl: profileImageUrl),
               ],
             ),
           ),
@@ -78,7 +81,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
     // For profile tab with image
     Widget iconWidget;
-    if (profileImageUrl != null && index == 1) {
+    if (profileImageUrl != null && index == 2) {
       final baseUrl = ApiConstants.baseUrl.replaceAll('/api', '');
       final url = profileImageUrl.startsWith('http') ? profileImageUrl : '$baseUrl$profileImageUrl';
       iconWidget = Container(
