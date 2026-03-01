@@ -109,21 +109,55 @@ class _HomePageState extends State<HomePage> {
           shaderCallback: (r) => LinearGradient(colors: [theme.colorScheme.primary, AppColors.success]).createShader(r),
           child: Text('HopeUp', style: TextStyle(fontSize: 26.sp, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1)),
         ),
-        GestureDetector(
-          onTap: () {
-            Vibration.vibrate(duration: 10, amplitude: 100);
-            context.read<AuthBloc>().add(const LogoutEvent());
-            Navigator.pushReplacementNamed(context, AppRoutes.getStarted);
-          },
-          child: Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: AppColors.getGlassColor(context),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: AppColors.getGlassBorder(context)),
+        Row(
+          children: [
+            GestureDetector(
+              onTap: () {
+                Vibration.vibrate(duration: 10, amplitude: 60);
+                Navigator.of(context).pushNamed(AppRoutes.notifications);
+              },
+              child: Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: AppColors.getGlassColor(context),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: AppColors.getGlassBorder(context)),
+                ),
+                child: Stack(
+                  children: [
+                    Icon(Icons.notifications_outlined, size: 20.sp, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                    // Simple dot for indicator (In real app, fetch count)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        width: 7.w,
+                        height: 7.w,
+                        decoration: const BoxDecoration(color: AppColors.sapphire, shape: BoxShape.circle),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            child: Icon(Icons.logout_rounded, size: 20.sp, color: theme.colorScheme.onSurface.withOpacity(0.4)),
-          ),
+            SizedBox(width: 8.w),
+            GestureDetector(
+              onTap: () {
+                Vibration.vibrate(duration: 10, amplitude: 100);
+                context.read<AuthBloc>().add(const LogoutEvent());
+                Navigator.pushReplacementNamed(context, AppRoutes.getStarted);
+              },
+              child: Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: AppColors.getGlassColor(context),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: AppColors.getGlassBorder(context)),
+                ),
+                child: Icon(Icons.logout_rounded, size: 20.sp, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -240,7 +274,9 @@ class _HomePageState extends State<HomePage> {
           child: GestureDetector(
             onTap: () {
               Vibration.vibrate(duration: 5, amplitude: 50);
-              // Navigation logic here if needed
+              if (a.label == 'Mood') {
+                Navigator.of(context).pushNamed(AppRoutes.assessment);
+              }
             },
             child: Container(
               margin: EdgeInsets.only(right: a != actions.last ? 10.w : 0),

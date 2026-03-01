@@ -8,6 +8,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/services/api_service.dart';
 import '../auth/bloc/auth_bloc.dart';
 import '../auth/bloc/auth_event.dart';
+import '../auth/bloc/auth_state.dart';
+import '../../core/services/risk_assessment_service.dart';
+import '../../core/models/user_model.dart';
 import 'steps/q1_health_goal.dart';
 import 'steps/q2_gender.dart';
 import 'steps/q3_mood.dart';
@@ -86,6 +89,26 @@ class _AssessmentPageState extends State<AssessmentPage> {
         mentalHealthConcerns: mentalHealthConcerns,
       );
       if (mounted) {
+        final authState = context.read<AuthBloc>().state;
+        if (authState is AuthAuthenticated) {
+          // Trigger risk analysis in background
+          RiskAssessmentService().analyzeRisk(
+            user: authState.user,
+            healthGoal: healthGoal,
+            gender: gender,
+            moodLevel: moodLevel,
+            sleepQuality: sleepQuality,
+            stressLevel: stressLevel,
+            soughtHelp: soughtHelp,
+            takingMeds: takingMeds,
+            medications: medications,
+            physicalDistress: physicalDistress,
+            symptoms: symptoms,
+            personalityTraits: personalityTraits,
+            mentalHealthConcerns: mentalHealthConcerns,
+          );
+        }
+        
         context.read<AuthBloc>().add(const CheckAuthEvent());
         Navigator.of(context).pushReplacementNamed(AppRoutes.mainNavigation);
       }
