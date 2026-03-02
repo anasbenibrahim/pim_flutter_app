@@ -1,11 +1,9 @@
-import 'dart:ui';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../core/widgets/premium_widgets.dart';
 import '../../../core/widgets/custom_app_bar.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/user_role.dart';
@@ -30,6 +28,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
   late TextEditingController _ageController;
   
   String? _imagePath;
+  bool _isLocalImage = false;
   UserModel? _user;
 
   @override
@@ -59,7 +58,11 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
     if (_user!.age != null) {
       _ageController.text = _user!.age.toString();
     }
-    _imagePath = _user!.profileImageUrl;
+    final url = _user!.profileImageUrl;
+    if (url != null && url.isNotEmpty && !url.startsWith('null')) {
+      _imagePath = url;
+      _isLocalImage = false;
+    }
   }
 
   @override
@@ -72,16 +75,20 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
   }
 
   Widget _buildProfileImage() {
+    final theme = Theme.of(context);
     final baseUrl = ApiConstants.baseUrl.replaceAll('/api', '');
     ImageProvider? imageProvider;
 
     if (_imagePath != null && _imagePath!.isNotEmpty) {
-      if (_imagePath!.startsWith('http') || _imagePath!.startsWith('/api')) {
-        final imageUrl = _imagePath!.startsWith('http') ? _imagePath! : '$baseUrl$_imagePath';
-        imageProvider = NetworkImage(imageUrl);
+      if (_isLocalImage) {
+        final file = File(_imagePath!);
+        if (file.existsSync()) {
+          imageProvider = FileImage(file);
+        }
       } else {
-        // Assume local path if it's from image picker
-        imageProvider = FileImage(File(_imagePath!));
+        final url = _imagePath!;
+        final imageUrl = url.startsWith('http') ? url : '$baseUrl${url.startsWith('/') ? url : '/$url'}';
+        imageProvider = NetworkImage(imageUrl);
       }
     }
 
@@ -89,25 +96,23 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
       child: Stack(
         children: [
           Container(
-            padding: EdgeInsets.all(4.w),
+            padding: EdgeInsets.all(3.w),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.primaryPurple.withValues(alpha: 0.5), width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryPurple.withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  spreadRadius: 5,
-                ),
-              ],
+              border: Border.all(color: theme.colorScheme.primary.withOpacity(0.15), width: 3),
             ),
-            child: CircleAvatar(
-              radius: 65.r,
-              backgroundColor: AppColors.getGlassColor(context),
-              backgroundImage: imageProvider,
-              child: imageProvider == null 
-                  ? Icon(Icons.person_rounded, size: 65.sp, color: AppColors.primaryPurple)
-                  : null,
+            child: ClipOval(
+              child: SizedBox(
+                width: 130.r,
+                height: 130.r,
+                child: imageProvider != null
+                    ? Image(
+                        image: imageProvider,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _placeholderAvatar(),
+                      )
+                    : _placeholderAvatar(),
+              ),
             ),
           ),
           Positioned(
@@ -117,8 +122,8 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
               onTap: _pickImage,
               child: Container(
                 padding: EdgeInsets.all(10.w),
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryPurple,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.camera_alt_rounded, size: 20.sp, color: Colors.white),
@@ -130,31 +135,78 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
     );
   }
 
+  Widget _buildFormField(
+    BuildContext context,
+    String label,
+    TextEditingController controller, {
+    required IconData prefixIcon,
+    TextInputType? keyboardType,
+    bool readOnly = false,
+    String? Function(String?)? validator,
+  }) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+        SizedBox(height: 8.h),
+        TextFormField(
+          controller: controller,
+          readOnly: readOnly,
+          keyboardType: keyboardType,
+          validator: validator,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.getGlassColor(context),
+            prefixIcon: Icon(prefixIcon, size: 20.sp, color: theme.colorScheme.primary),
+            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14.r), borderSide: BorderSide(color: AppColors.getGlassBorder(context))),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14.r), borderSide: BorderSide(color: AppColors.getGlassBorder(context))),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14.r), borderSide: BorderSide(color: theme.colorScheme.primary, width: 1.5)),
+            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14.r), borderSide: const BorderSide(color: AppColors.error)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _placeholderAvatar() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: AppColors.getGlassColor(context),
+      child: Icon(Icons.person_rounded, size: 65.sp, color: Theme.of(context).colorScheme.primary),
+    );
+  }
+
   Future<void> _pickImage() async {
+    final theme = Theme.of(context);
     final ImagePicker picker = ImagePicker();
     final XFile? image = await showModalBottomSheet<XFile>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => GlassCard(
-        borderRadius: 25.r,
-        padding: EdgeInsets.zero,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(height: 12.h),
-            Container(width: 40.w, height: 4.h, decoration: BoxDecoration(color: AppColors.getPremiumTextSecondary(context).withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
+            Container(width: 40.w, height: 4.h, decoration: BoxDecoration(color: theme.colorScheme.onSurface.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
             Padding(
               padding: EdgeInsets.symmetric(vertical: 20.h),
-              child: Text('Choisir une photo', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: AppColors.getPremiumText(context))),
+              child: Text('Choisir une photo', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
             ),
             ListTile(
-              leading: Icon(Icons.photo_library_rounded, color: AppColors.getPremiumTextSecondary(context)),
-              title: Text('Galerie', style: TextStyle(color: AppColors.getPremiumText(context))),
+              leading: Icon(Icons.photo_library_rounded, color: theme.colorScheme.primary),
+              title: Text('Galerie', style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.w600)),
               onTap: () async => Navigator.pop(context, await picker.pickImage(source: ImageSource.gallery)),
             ),
             ListTile(
-              leading: Icon(Icons.camera_alt_rounded, color: AppColors.getPremiumTextSecondary(context)),
-              title: Text('Appareil photo', style: TextStyle(color: AppColors.getPremiumText(context))),
+              leading: Icon(Icons.camera_alt_rounded, color: theme.colorScheme.primary),
+              title: Text('Appareil photo', style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.w600)),
               onTap: () async => Navigator.pop(context, await picker.pickImage(source: ImageSource.camera)),
             ),
             SizedBox(height: 24.h),
@@ -166,6 +218,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
     if (image != null) {
       setState(() {
         _imagePath = image.path;
+        _isLocalImage = true;
       });
     }
   }
@@ -186,11 +239,16 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     if (_user == null) {
-      return const PremiumScaffold(body: Center(child: CircularProgressIndicator(color: AppColors.primaryPurple)));
+      return Scaffold(
+        backgroundColor: theme.colorScheme.background,
+        body: Center(child: CircularProgressIndicator(color: theme.colorScheme.primary)),
+      );
     }
 
-    return PremiumScaffold(
+    return Scaffold(
+      backgroundColor: theme.colorScheme.background,
       appBar: CustomAppBar(
         title: 'Modifier le profil',
       ),
@@ -211,31 +269,45 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
               children: [
                 _buildProfileImage(),
                 SizedBox(height: 40.h),
-                GlassCard(
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(24.w),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: theme.brightness == Brightness.dark ? Border.all(color: Colors.white.withOpacity(0.05)) : null,
+                    boxShadow: theme.brightness == Brightness.dark ? null : [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     children: [
-                      PremiumTextField(label: 'Email', hintText: '', controller: _emailController, prefixIcon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
+                      _buildFormField(context, 'Email', _emailController, prefixIcon: Icons.email_outlined, keyboardType: TextInputType.emailAddress, readOnly: true),
                       SizedBox(height: 20.h),
-                      PremiumTextField(label: 'Nom', hintText: 'Entrez votre nom', controller: _nomController, prefixIcon: Icons.person_outline_rounded, validator: (v) => v!.isEmpty ? 'Le nom est requis' : null),
+                      _buildFormField(context, 'Nom', _nomController, prefixIcon: Icons.person_outline_rounded, validator: (v) => v?.isEmpty ?? true ? 'Le nom est requis' : null),
                       SizedBox(height: 20.h),
-                      PremiumTextField(label: 'Prénom', hintText: 'Entrez votre prénom', controller: _prenomController, prefixIcon: Icons.person_outline_rounded, validator: (v) => v!.isEmpty ? 'Le prénom est requis' : null),
+                      _buildFormField(context, 'Prénom', _prenomController, prefixIcon: Icons.person_outline_rounded, validator: (v) => v?.isEmpty ?? true ? 'Le prénom est requis' : null),
                       if (_user!.role != UserRole.familyMember) ...[
                         SizedBox(height: 20.h),
-                        PremiumTextField(label: 'Âge', hintText: 'Entrez votre âge', controller: _ageController, prefixIcon: Icons.cake_outlined, keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'L\'âge est requis' : null),
+                        _buildFormField(context, 'Âge', _ageController, prefixIcon: Icons.cake_outlined, keyboardType: TextInputType.number, validator: (v) => v?.isEmpty ?? true ? 'L\'âge est requis' : null),
                       ],
                       SizedBox(height: 32.h),
                       SizedBox(
                         width: double.infinity,
+                        height: 52.h,
                         child: ElevatedButton(
                           onPressed: _handleUpdateProfile,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryPurple,
+                            backgroundColor: theme.colorScheme.primary,
                             foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(vertical: 18.h),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                             elevation: 0,
                           ),
-                          child: Text('Enregistrer les modifications', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                          child: Text('Enregistrer les modifications', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700)),
                         ),
                       ),
                     ],

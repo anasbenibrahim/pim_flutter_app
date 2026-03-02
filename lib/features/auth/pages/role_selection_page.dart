@@ -8,7 +8,6 @@ const _linen     = Color(0xFFF2EBE1);
 const _indigo    = Color(0xFF022F40);
 const _emerald   = Color(0xFF46C67D);
 const _sunflower = Color(0xFFF8C929);
-const _brick     = Color(0xFFF9623E);
 
 class RoleSelectionPage extends StatelessWidget {
   const RoleSelectionPage({super.key});

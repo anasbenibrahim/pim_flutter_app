@@ -9,7 +9,6 @@ import '../../../core/widgets/image_picker_widget.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/custom_dropdown_field.dart';
 import '../../../core/widgets/custom_button.dart';
-import '../../../core/widgets/custom_app_bar.dart';
 import '../../../core/models/addiction_type.dart';
 import '../../../core/routes/app_routes.dart';
 import '../bloc/auth_bloc.dart';
@@ -282,7 +281,7 @@ class _RegisterPatientPageState extends State<RegisterPatientPage> {
                                 fontSize: 16.sp,
                                 color: _dateNaissance != null
                                     ? AppColors.getPremiumText(context)
-                                    : AppColors.getPremiumTextSecondary(context).withOpacity(0.5),
+                                    : AppColors.getPremiumTextSecondary(context).withValues(alpha: 0.5),
                                 fontWeight: FontWeight.normal,
                                 fontFamily: 'sans-serif',
                               ),
@@ -329,7 +328,7 @@ class _RegisterPatientPageState extends State<RegisterPatientPage> {
                                 fontSize: 16.sp,
                                 color: _sobrietyDate != null
                                     ? AppColors.getPremiumText(context)
-                                    : AppColors.getPremiumTextSecondary(context).withOpacity(0.5),
+                                    : AppColors.getPremiumTextSecondary(context).withValues(alpha: 0.5),
                                 fontWeight: FontWeight.normal,
                                 fontFamily: 'sans-serif',
                               ),
@@ -702,4 +701,5 @@ class _RegisterPatientPageState extends State<RegisterPatientPage> {
       ),
     );
   }
+
 }

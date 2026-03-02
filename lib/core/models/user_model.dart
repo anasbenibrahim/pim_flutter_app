@@ -19,7 +19,11 @@ class UserModel {
   final String? patientPrenom;
   final String? addiction;
   final DateTime? sobrietyDate;
-  
+  /// Goals gamification (patients only)
+  final int totalXp;
+  final int level;
+  final String? levelTitle;
+
   UserModel({
     required this.id,
     required this.email,
@@ -38,6 +42,9 @@ class UserModel {
     this.patientPrenom,
     this.addiction,
     this.sobrietyDate,
+    this.totalXp = 0,
+    this.level = 1,
+    this.levelTitle,
   });
   
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -63,6 +70,9 @@ class UserModel {
       sobrietyDate: json['sobrietyDate'] != null 
           ? DateTime.parse(json['sobrietyDate'] as String)
           : null,
+      totalXp: json['totalXp'] as int? ?? 0,
+      level: json['level'] as int? ?? 1,
+      levelTitle: json['levelTitle'] as String?,
     );
   }
   
@@ -85,6 +95,9 @@ class UserModel {
       'patientPrenom': patientPrenom,
       'addiction': addiction,
       'sobrietyDate': sobrietyDate?.toIso8601String(),
+      'totalXp': totalXp,
+      'level': level,
+      'levelTitle': levelTitle,
     };
   }
 }

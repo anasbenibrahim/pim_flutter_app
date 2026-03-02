@@ -8,12 +8,14 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_event.dart';
 import '../../auth/bloc/auth_state.dart';
+import '../../goals/bloc/goals_bloc.dart';
+import '../../goals/bloc/goals_event.dart';
+import '../../goals/bloc/goals_state.dart';
 import '../../../core/models/user_role.dart';
-import '../../../core/models/achievement_badge.dart';
-import '../../../core/models/weekly_achievement_model.dart';
+import '../../../core/models/goal_model.dart';
+import '../../../core/models/goal_status.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/constants/api_constants.dart';
-
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/api_service.dart';
 
@@ -31,66 +33,30 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           if (state is AuthAuthenticated) {
+            final isPatient = state.user.role == UserRole.patient;
+            if (isPatient) {
+              return SafeArea(
+                child: BlocProvider(
+                  create: (_) => GoalsBloc(apiService: ApiService())..add(const LoadGoalsEvent()),
+                  child: Builder(
+                    builder: (ctx) => SingleChildScrollView(
+                      padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 120.h),
+                      child: _buildHomeColumn(ctx, state, isPatient: true),
+                    ),
+                  ),
+                ),
+              );
+            }
             return SafeArea(
               child: SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 120.h),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTopBar(context),
-                    SizedBox(height: 24.h),
-                    _buildGreeting(state.user.prenom, state.user.nom, state.user.profileImageUrl),
-                    SizedBox(height: 20.h),
-
-                    // Profile completion card
-                    if (state.user.role == UserRole.patient && !state.user.hasCompletedAssessment)
-                      _buildCompletionCard(state.user.profileCompletionScore),
-
-                    if (state.user.role == UserRole.patient && !state.user.hasCompletedAssessment)
-                      SizedBox(height: 16.h),
-
-                    // Daily streak card
-                    if (state.user.role == UserRole.patient && state.user.sobrietyDate != null)
-                      _buildStreakCard(state.user.sobrietyDate!),
-
-                    // Quick Actions
-                    Text("Quick Actions", style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
-                    SizedBox(height: 12.h),
-                    _buildQuickActions(context, state.user.role),
-
-                    SizedBox(height: 24.h),
-                    
-                    // Mood Journey Section
-                    Text("Mood Journey", style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
-                    SizedBox(height: 12.h),
-                    _buildMoodJourneyChart(),
-
-                    SizedBox(height: 24.h),
-
-                    // Profile snapshot
-                    _buildProfileCard(state.user.role),
-
-                    if (state.user.role == UserRole.patient) ...[
-                      SizedBox(height: 16.h),
-                      _buildSobrietyCard(state.user.addiction, state.user.sobrietyDate),
-                      SizedBox(height: 16.h),
-                      _buildReferralCard(state.user.referralCode),
-                    ],
-
-                    if (state.user.role == UserRole.familyMember &&
-                        state.user.patientNom != null) ...[
-                      SizedBox(height: 16.h),
-                      _buildRelatedPatientCard(state.user.patientPrenom!, state.user.patientNom!),
-                    ],
-                  ],
-                ),
+                child: _buildHomeColumn(context, state, isPatient: false),
               ),
             );
           } else {
@@ -98,6 +64,46 @@ class _HomePageState extends State<HomePage> {
           }
         },
       ),
+    );
+  }
+
+  Widget _buildHomeColumn(BuildContext context, AuthAuthenticated state, {required bool isPatient}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildTopBar(context),
+        SizedBox(height: 24.h),
+        _buildGreeting(state.user.prenom, state.user.nom, state.user.profileImageUrl),
+        SizedBox(height: 20.h),
+        if (isPatient && !state.user.hasCompletedAssessment) _buildCompletionCard(state.user.profileCompletionScore),
+        if (isPatient && !state.user.hasCompletedAssessment) SizedBox(height: 16.h),
+        if (isPatient && state.user.sobrietyDate != null) _buildStreakCard(state.user.sobrietyDate!),
+        Text("Quick Actions", style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface)),
+        SizedBox(height: 12.h),
+        _buildQuickActions(context, state.user.role),
+        SizedBox(height: 24.h),
+        if (isPatient) ...[
+          Text("Goal Journey", style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface)),
+          SizedBox(height: 12.h),
+          _buildGoalJourneyChart(context),
+        ] else ...[
+          Text("Mood Journey", style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface)),
+          SizedBox(height: 12.h),
+          _buildMoodJourneyChart(),
+        ],
+        SizedBox(height: 24.h),
+        _buildProfileCard(state.user.role),
+        if (isPatient) ...[
+          SizedBox(height: 16.h),
+          _buildSobrietyCard(state.user.addiction, state.user.sobrietyDate),
+          SizedBox(height: 16.h),
+          _buildReferralCard(state.user.referralCode),
+        ],
+        if (state.user.role == UserRole.familyMember && state.user.patientNom != null) ...[
+          SizedBox(height: 16.h),
+          _buildRelatedPatientCard(state.user.patientPrenom!, state.user.patientNom!),
+        ],
+      ],
     );
   }
 
@@ -127,7 +133,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: Stack(
                   children: [
-                    Icon(Icons.notifications_outlined, size: 20.sp, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                    Icon(Icons.notifications_outlined, size: 20.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                     // Simple dot for indicator (In real app, fetch count)
                     Positioned(
                       right: 0,
@@ -156,7 +162,7 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(color: AppColors.getGlassBorder(context)),
                 ),
-                child: Icon(Icons.logout_rounded, size: 20.sp, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                child: Icon(Icons.logout_rounded, size: 20.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
               ),
             ),
           ],
@@ -184,7 +190,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(greeting, style: TextStyle(fontSize: 15.sp, color: theme.colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.w500)),
+              Text(greeting, style: TextStyle(fontSize: 15.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.4), fontWeight: FontWeight.w500)),
               SizedBox(height: 4.h),
               Text('$prenom $nom', style: TextStyle(fontSize: 26.sp, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface, letterSpacing: -0.5)),
             ],
@@ -205,7 +211,7 @@ class _HomePageState extends State<HomePage> {
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.15), width: 2.5),
+        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.15), width: 2.5),
       ),
       child: CircleAvatar(
         radius: 28.r,
@@ -230,7 +236,7 @@ class _HomePageState extends State<HomePage> {
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
-          BoxShadow(color: theme.colorScheme.primary.withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 8)),
+          BoxShadow(color: theme.colorScheme.primary.withValues(alpha: 0.2), blurRadius: 15, offset: const Offset(0, 8)),
         ],
       ),
       child: Column(
@@ -240,19 +246,19 @@ class _HomePageState extends State<HomePage> {
             children: [
               Icon(Icons.local_fire_department_rounded, color: _sunflower, size: 28.sp),
               SizedBox(width: 10.w),
-              Text("Your Journey", style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.85))),
+              Text("Your Journey", style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.85))),
             ],
           ),
           SizedBox(height: 16.h),
           Text('$days', style: TextStyle(fontSize: 48.sp, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
-          Text('days strong', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500, color: Colors.white.withOpacity(0.7))),
+          Text('days strong', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.7))),
           SizedBox(height: 12.h),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(10.r)),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10.r)),
             child: Text(
               'Since ${DateFormat('MMM dd, yyyy').format(sobrietyDate)}',
-              style: TextStyle(fontSize: 12.sp, color: Colors.white.withOpacity(0.8), fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -292,11 +298,11 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Container(
                     padding: EdgeInsets.all(10.w),
-                    decoration: BoxDecoration(color: a.color.withOpacity(0.1), shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: a.color.withValues(alpha: 0.1), shape: BoxShape.circle),
                     child: Icon(a.icon, color: a.color, size: 22.sp),
                   ),
                   SizedBox(height: 8.h),
-                  Text(a.label, style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.7))),
+                  Text(a.label, style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withValues(alpha: 0.7))),
                 ],
               ),
             ),
@@ -324,7 +330,7 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(18.r),
-        border: theme.brightness == Brightness.dark ? Border.all(color: Colors.white.withOpacity(0.05)) : null,
+        border: theme.brightness == Brightness.dark ? Border.all(color: Colors.white.withValues(alpha: 0.05)) : null,
       ),
       child: Column(
         children: [
@@ -334,7 +340,7 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Substance', style: TextStyle(fontSize: 13.sp, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+                    Text('Substance', style: TextStyle(fontSize: 13.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
                     SizedBox(height: 4.h),
                     Text(addiction ?? 'Not specified', style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
                   ],
@@ -343,19 +349,19 @@ class _HomePageState extends State<HomePage> {
               if (sobrietyDate != null)
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
-                  decoration: BoxDecoration(color: AppColors.emerald.withOpacity(0.1), borderRadius: BorderRadius.circular(10.r)),
+                  decoration: BoxDecoration(color: AppColors.emerald.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10.r)),
                   child: Text('In Progress', style: TextStyle(color: AppColors.emerald, fontWeight: FontWeight.w700, fontSize: 12.sp)),
                 ),
             ],
           ),
           if (sobrietyDate != null) ...[
             SizedBox(height: 16.h),
-            Divider(color: theme.colorScheme.onSurface.withOpacity(0.06), height: 1),
+            Divider(color: theme.colorScheme.onSurface.withValues(alpha: 0.06), height: 1),
             SizedBox(height: 12.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Sober since', style: TextStyle(fontSize: 13.sp, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+                Text('Sober since', style: TextStyle(fontSize: 13.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
                 Text(
                   DateFormat('MMM dd, yyyy').format(sobrietyDate),
                   style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface),
@@ -377,7 +383,7 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(18.r),
-        border: theme.brightness == Brightness.dark ? Border.all(color: Colors.white.withOpacity(0.05)) : null,
+        border: theme.brightness == Brightness.dark ? Border.all(color: Colors.white.withValues(alpha: 0.05)) : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,7 +392,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               Container(
                 padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.08), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: 0.08), shape: BoxShape.circle),
                 child: Icon(Icons.share_rounded, color: theme.colorScheme.primary, size: 18.sp),
               ),
               SizedBox(width: 12.w),
@@ -395,7 +401,7 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 12.h),
           Text('Share this code with people you trust.',
-            style: TextStyle(fontSize: 13.sp, color: theme.colorScheme.onSurface.withOpacity(0.4), height: 1.5)),
+            style: TextStyle(fontSize: 13.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.4), height: 1.5)),
           SizedBox(height: 14.h),
           GestureDetector(
             onTap: () {
@@ -411,8 +417,8 @@ class _HomePageState extends State<HomePage> {
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.05), borderRadius: BorderRadius.circular(14.r),
-                border: Border.all(color: theme.colorScheme.primary.withOpacity(0.1)),
+                color: theme.colorScheme.primary.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.1)),
               ),
               child: Row(
                 children: [
@@ -448,7 +454,7 @@ class _HomePageState extends State<HomePage> {
                                   SizedBox(height: 24.h),
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
-                                    child: Text("Fermer", style: TextStyle(color: _indigo.withOpacity(0.5))),
+                                    child: Text("Fermer", style: TextStyle(color: _indigo.withValues(alpha: 0.5))),
                                   ),
                                 ],
                               ),
@@ -458,7 +464,7 @@ class _HomePageState extends State<HomePage> {
                       }
                     },
                   ),
-                  Icon(Icons.copy_rounded, size: 18.sp, color: theme.colorScheme.onSurface.withOpacity(0.25)),
+                  Icon(Icons.copy_rounded, size: 18.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.25)),
                 ],
               ),
             ),
@@ -482,13 +488,13 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(18.r),
-        border: theme.brightness == Brightness.dark ? Border.all(color: Colors.white.withOpacity(0.05)) : null,
+        border: theme.brightness == Brightness.dark ? Border.all(color: Colors.white.withValues(alpha: 0.05)) : null,
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(color: iconColor.withOpacity(0.1), borderRadius: BorderRadius.circular(14.r)),
+            decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14.r)),
             child: Icon(icon, color: iconColor, size: 24.sp),
           ),
           SizedBox(width: 16.w),
@@ -496,7 +502,7 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontSize: 13.sp, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+                Text(title, style: TextStyle(fontSize: 13.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
                 SizedBox(height: 2.h),
                 Text(value, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
               ],
@@ -516,7 +522,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCompletionCard(int score) {
-    final theme = Theme.of(context);
     final pct = score / 100;
     return GestureDetector(
       onTap: () => Navigator.of(context).pushNamed(AppRoutes.assessment),
@@ -553,19 +558,110 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Text('Complete your profile', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.white)),
                   SizedBox(height: 4.h),
-                  Text('Tell us more about yourself to unlock personalized insights', style: TextStyle(fontSize: 12.sp, color: Colors.white.withOpacity(0.7))),
+                  Text('Tell us more about yourself to unlock personalized insights', style: TextStyle(fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.7))),
                 ],
               ),
             ),
             SizedBox(width: 8.w),
             Container(
               padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10.r)),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10.r)),
               child: Icon(Icons.arrow_forward_rounded, size: 18.sp, color: Colors.white),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildGoalJourneyChart(BuildContext context) {
+    return BlocBuilder<GoalsBloc, GoalsState>(
+      builder: (context, goalsState) {
+        List<GoalModel> goals = [];
+        if (goalsState is GoalsLoaded) goals = goalsState.goals;
+        if (goalsState is GoalCreated) goals = goalsState.goals;
+
+        final now = DateTime.now();
+        final weekStart = now.subtract(Duration(days: now.weekday - 1));
+        final dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+        final checkInsPerDay = List<int>.filled(7, 0);
+        for (final g in goals) {
+          for (final d in g.checkInDates) {
+            if (d.isAfter(weekStart.subtract(const Duration(days: 1))) &&
+                d.isBefore(weekStart.add(const Duration(days: 7)))) {
+              final idx = d.weekday - 1;
+              if (idx >= 0 && idx < 7) checkInsPerDay[idx]++;
+            }
+          }
+        }
+
+        final validatedCount = goals.where((g) => g.status == GoalStatus.validated).length;
+        final failedCount = goals.where((g) => g.status == GoalStatus.failed).length;
+        final totalEnded = validatedCount + failedCount;
+        int improvementPct = 0;
+        String improvementLabel = 'Start tracking';
+        if (totalEnded > 0) {
+          improvementPct = ((validatedCount - failedCount) / totalEnded * 100).round();
+          improvementLabel = improvementPct >= 0
+              ? '+$improvementPct% improvement'
+              : '$improvementPct% to work on';
+        } else if (goals.isNotEmpty) {
+          improvementLabel = '${goals.length} active';
+        }
+
+        final maxVal = checkInsPerDay.isEmpty ? 1 : checkInsPerDay.reduce((a, b) => a > b ? a : b);
+        final values = checkInsPerDay.map((c) => maxVal > 0 ? c / maxVal : 0.0).toList();
+        if (values.every((v) => v == 0)) {
+          for (var i = 0; i < 7; i++) values[i] = 0.3;
+        }
+
+        final theme = Theme.of(context);
+        return Container(
+          width: double.infinity,
+          height: 180.h,
+          padding: EdgeInsets.all(20.w),
+          decoration: BoxDecoration(
+            color: AppColors.getGlassColor(context),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: AppColors.getGlassBorder(context)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Weekly Trend", style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: (improvementPct >= 0 ? AppColors.emerald : AppColors.brick).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(improvementLabel, style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w700, color: improvementPct >= 0 ? AppColors.emerald : AppColors.brick)),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: CustomPaint(
+                  size: Size(double.infinity, 100.h),
+                  painter: _GoalChartPainter(
+                    values: values,
+                    color: theme.colorScheme.primary,
+                    isDark: theme.brightness == Brightness.dark,
+                  ),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: dayLabels.map((d) => Text(d, style: TextStyle(fontSize: 10.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.3), fontWeight: FontWeight.w600))).toList(),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -586,10 +682,10 @@ class _HomePageState extends State<HomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Weekly Trend", style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+              Text("Weekly Trend", style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(color: AppColors.emerald.withOpacity(0.1), borderRadius: BorderRadius.circular(8.r)),
+                decoration: BoxDecoration(color: AppColors.emerald.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8.r)),
                 child: Text("+12% improvement", style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w700, color: AppColors.emerald)),
               ),
             ],
@@ -599,7 +695,7 @@ class _HomePageState extends State<HomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) {
-              return Text(day, style: TextStyle(fontSize: 10.sp, color: theme.colorScheme.onSurface.withOpacity(0.3), fontWeight: FontWeight.w600));
+              return Text(day, style: TextStyle(fontSize: 10.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.3), fontWeight: FontWeight.w600));
             }).toList(),
           ),
         ],
@@ -631,7 +727,7 @@ class _MoodChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 3.w
+      ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
@@ -640,7 +736,7 @@ class _MoodChartPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [color.withOpacity(0.2), Colors.transparent],
+        colors: [color.withValues(alpha: 0.2), Colors.transparent],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     final path = Path();
@@ -654,6 +750,66 @@ class _MoodChartPainter extends CustomPainter {
       Offset(size.width, size.height * 0.3),
     ];
 
+    path.moveTo(points[0].dx, points[0].dy);
+    for (int i = 0; i < points.length - 1; i++) {
+      final p1 = points[i];
+      final p2 = points[i + 1];
+      final controlPoint1 = Offset(p1.dx + (p2.dx - p1.dx) / 2, p1.dy);
+      final controlPoint2 = Offset(p1.dx + (p2.dx - p1.dx) / 2, p2.dy);
+      path.cubicTo(controlPoint1.dx, controlPoint1.dy, controlPoint2.dx, controlPoint2.dy, p2.dx, p2.dy);
+    }
+
+    final fillPath = Path.from(path);
+    fillPath.lineTo(size.width, size.height);
+    fillPath.lineTo(0, size.height);
+    fillPath.close();
+
+    canvas.drawPath(fillPath, fillPaint);
+    canvas.drawPath(path, paint);
+
+    for (final p in points) {
+      canvas.drawCircle(p, 4, Paint()..color = isDark ? Colors.white : color);
+      canvas.drawCircle(p, 2, Paint()..color = isDark ? color : Colors.white);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _GoalChartPainter extends CustomPainter {
+  final List<double> values;
+  final Color color;
+  final bool isDark;
+
+  _GoalChartPainter({required this.values, required this.color, required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.length < 7) return;
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final fillPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [color.withValues(alpha: 0.2), Colors.transparent],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    final step = size.width / 6;
+    final points = <Offset>[];
+    for (var i = 0; i < 7; i++) {
+      final x = i * step;
+      final y = size.height * (1 - values[i].clamp(0.0, 1.0));
+      points.add(Offset(x, y));
+    }
+
+    final path = Path();
     path.moveTo(points[0].dx, points[0].dy);
     for (int i = 0; i < points.length - 1; i++) {
         final p1 = points[i];
@@ -673,13 +829,13 @@ class _MoodChartPainter extends CustomPainter {
     
     // Draw data points
     for (final p in points) {
-      canvas.drawCircle(p, 4.w, Paint()..color = isDark ? Colors.white : color);
-      canvas.drawCircle(p, 2.w, Paint()..color = isDark ? color : Colors.white);
+      canvas.drawCircle(p, 4, Paint()..color = isDark ? Colors.white : color);
+      canvas.drawCircle(p, 2, Paint()..color = isDark ? color : Colors.white);
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _GoalChartPainter old) => true;
 }
 
 class _RingPainter extends CustomPainter {
@@ -694,7 +850,7 @@ class _RingPainter extends CustomPainter {
 
     // Background ring
     canvas.drawCircle(center, radius, Paint()
-      ..color = Colors.white.withOpacity(0.2)
+      ..color = Colors.white.withValues(alpha: 0.2)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth);
 

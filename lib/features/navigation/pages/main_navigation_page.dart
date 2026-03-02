@@ -2,15 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/api_constants.dart';
+import '../../../core/models/user_role.dart';
 import '../../home/pages/home_page.dart';
 import '../../social/presentation/pages/social_feed_page.dart';
+import '../../goals/pages/goals_hub_page.dart';
 import '../../profile/pages/profile_page.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart';
 
-const _sapphire  = Color(0xFF0D6078);
-const _linen     = Color(0xFFF2EBE1);
-const _indigo    = Color(0xFF022F40);
+/// Allows child routes to request switching to the Goals tab (e.g. after validating a goal).
+class GoalsTabScope extends InheritedWidget {
+  final VoidCallback switchToGoalsTab;
+
+  const GoalsTabScope({
+    super.key,
+    required this.switchToGoalsTab,
+    required super.child,
+  });
+
+  static GoalsTabScope? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<GoalsTabScope>();
+  }
+
+  @override
+  bool updateShouldNotify(GoalsTabScope old) => switchToGoalsTab != old.switchToGoalsTab;
+}
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
@@ -21,11 +37,31 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int _currentIndex = 0;
 
-  final _pages = const [
-    HomePage(key: ValueKey('home')),
-    SocialFeedPage(key: ValueKey('social')),
-    ProfilePage(key: ValueKey('profile')),
-  ];
+  static const int _goalsTabIndex = 2;
+
+  void _switchToGoalsTab() {
+    if (_currentIndex != _goalsTabIndex) {
+      setState(() => _currentIndex = _goalsTabIndex);
+    }
+  }
+
+  List<Widget> _buildPages(UserRole? role) {
+    final base = [
+      const HomePage(key: ValueKey('home')),
+      const SocialFeedPage(key: ValueKey('social')),
+      const ProfilePage(key: ValueKey('profile')),
+    ];
+    // Goals tab only for patients (addiction reduction flow)
+    if (role == UserRole.patient) {
+      return [
+        const HomePage(key: ValueKey('home')),
+        const SocialFeedPage(key: ValueKey('social')),
+        const GoalsHubPage(key: ValueKey('goals')),
+        const ProfilePage(key: ValueKey('profile')),
+      ];
+    }
+    return base;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,18 +71,25 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         String? profileImageUrl;
+        UserRole? userRole;
         if (state is AuthAuthenticated) {
           profileImageUrl = state.user.profileImageUrl;
+          userRole = state.user.role;
         }
+        final pages = _buildPages(userRole);
+        final maxIndex = pages.length - 1;
+        final safeIndex = _currentIndex > maxIndex ? maxIndex : _currentIndex;
 
-        return Scaffold(
-          extendBody: true,
-          body: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            child: _pages[_currentIndex],
-          ),
+        return GoalsTabScope(
+          switchToGoalsTab: _switchToGoalsTab,
+          child: Scaffold(
+            extendBody: true,
+            body: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              child: pages[safeIndex],
+            ),
           bottomNavigationBar: Container(
-            margin: EdgeInsets.fromLTRB(48.w, 0, 48.w, 28.h),
+            margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 28.h),
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
@@ -64,10 +107,19 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               children: [
                 _buildTab(context, index: 0, icon: Icons.home_rounded, label: 'Home'),
                 _buildTab(context, index: 1, icon: Icons.article_rounded, label: 'Social'),
-                _buildTab(context, index: 2, icon: Icons.person_rounded, label: 'Profile', profileImageUrl: profileImageUrl),
+                if (userRole == UserRole.patient)
+                  _buildTab(context, index: 2, icon: Icons.emoji_events_rounded, label: 'Goals'),
+                _buildTab(
+                  context,
+                  index: userRole == UserRole.patient ? 3 : 2,
+                  icon: Icons.person_rounded,
+                  label: 'Profile',
+                  profileImageUrl: profileImageUrl,
+                ),
               ],
             ),
           ),
+        ),
         );
       },
     );
@@ -79,9 +131,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     final activeColor = theme.colorScheme.primary;
     final inactiveColor = theme.colorScheme.onSurface.withOpacity(0.3);
 
-    // For profile tab with image
+    // For profile tab with image (profile index varies: 2 for non-patient, 3 for patient)
     Widget iconWidget;
-    if (profileImageUrl != null && index == 2) {
+    if (profileImageUrl != null) {
       final baseUrl = ApiConstants.baseUrl.replaceAll('/api', '');
       final url = profileImageUrl.startsWith('http') ? profileImageUrl : '$baseUrl$profileImageUrl';
       iconWidget = Container(
@@ -110,15 +162,24 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             color: isActive ? activeColor.withOpacity(0.08) : Colors.transparent,
             borderRadius: BorderRadius.circular(16.r),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              iconWidget,
-              if (isActive) ...[
-                SizedBox(width: 8.w),
-                Text(label, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700, color: activeColor)),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                iconWidget,
+                if (isActive) ...[
+                  SizedBox(width: 6.w),
+                  Text(
+                    label,
+                    style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w700, color: activeColor),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

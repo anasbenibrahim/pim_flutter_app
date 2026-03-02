@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../features/auth/pages/get_started_page.dart';
 import '../../features/auth/pages/login_page.dart';
 import '../../features/auth/pages/role_selection_page.dart';
@@ -21,6 +22,11 @@ import '../../features/social/data/models/post_model.dart';
 import '../../features/social/presentation/pages/social_feed_page.dart';
 import '../../features/social/presentation/pages/create_post_page.dart';
 import '../../features/social/presentation/pages/post_detail_page.dart';
+import '../../features/goals/pages/create_goal_page.dart';
+import '../../features/goals/pages/goal_tracking_page.dart';
+import '../../features/goals/bloc/goals_bloc.dart';
+import '../../features/goals/bloc/goals_event.dart';
+import '../../core/services/api_service.dart';
 
 class AppRoutes {
   static const String getStarted = '/get-started';
@@ -42,6 +48,10 @@ class AppRoutes {
   static const String assessment = '/assessment';
   static const String notifications = '/notifications';
   
+  // Goals routes (patient addiction reduction)
+  static const String createGoal = '/goals/create';
+  static const String goalTrackingBase = '/goals/track';
+
   // Social routes
   static const String socialFeed = '/social-feed';
   static const String createPost = '/create-post';
@@ -135,6 +145,30 @@ class AppRoutes {
             postId: post is PostModel ? post.id : post as int,
             initialPost: post is PostModel ? post : null,
           ),
+        );
+
+      case createGoal:
+        final goalsBloc = settings.arguments is GoalsBloc
+            ? settings.arguments as GoalsBloc
+            : null;
+        return MaterialPageRoute(
+          builder: (_) => goalsBloc != null
+              ? BlocProvider<GoalsBloc>.value(
+                  value: goalsBloc,
+                  child: const CreateGoalPage(),
+                )
+              : BlocProvider<GoalsBloc>(
+                  create: (_) => GoalsBloc(apiService: ApiService())..add(const LoadGoalsEvent()),
+                  child: const CreateGoalPage(),
+                ),
+        );
+
+      case goalTrackingBase:
+        final args = settings.arguments;
+        final id = args is Map ? (args['goalId'] as int?) ?? 0 : (args as int?) ?? 0;
+        final hubBloc = args is Map ? args['hubBloc'] as GoalsBloc? : null;
+        return MaterialPageRoute(
+          builder: (_) => GoalTrackingPage(goalId: id, hubBloc: hubBloc),
         );
 
       default:

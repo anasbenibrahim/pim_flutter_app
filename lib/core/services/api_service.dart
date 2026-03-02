@@ -10,6 +10,10 @@ import '../models/objectif_model.dart';
 import '../models/mood_type.dart';
 import '../models/weekly_achievement_model.dart';
 import '../models/achievement_badge.dart';
+import '../models/goal_model.dart';
+import '../models/goal_category.dart';
+import '../models/goal_difficulty.dart';
+import '../models/gamification_model.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -661,6 +665,152 @@ class ApiService {
         message = 'An unexpected error occurred: ${response.body.length > 200 ? response.body.substring(0, 200) : response.body}';
       }
       throw Exception(message);
+    }
+  }
+
+  // Goals API (addiction reduction)
+  Future<List<GoalModel>> getGoals() async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.goals}'),
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final list = jsonDecode(response.body) as List<dynamic>;
+        return list.map((e) => GoalModel.fromJson(e as Map<String, dynamic>)).toList();
+      }
+      final err = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(err['message'] ?? 'Failed to load goals');
+    } catch (e) {
+      throw Exception('Failed to load goals: ${e.toString()}');
+    }
+  }
+
+  Future<GoalModel> createGoal({
+    required GoalCategory category,
+    required String title,
+    required GoalDifficulty difficulty,
+    required int targetValue,
+    String? targetUnit,
+    int? initialValue,
+  }) async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+    try {
+      final body = {
+        'category': category.apiValue,
+        'title': title,
+        'difficulty': difficulty.apiValue,
+        'targetValue': targetValue,
+        if (targetUnit != null) 'targetUnit': targetUnit,
+        if (initialValue != null) 'initialValue': initialValue,
+      };
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.goals}'),
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+      if (response.statusCode == 201) {
+        return GoalModel.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+      }
+      final err = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(err['message'] ?? 'Failed to create goal');
+    } catch (e) {
+      throw Exception('Failed to create goal: ${e.toString()}');
+    }
+  }
+
+  Future<GoalModel> getGoal(int id) async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.goals}/$id'),
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        return GoalModel.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+      }
+      final err = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(err['message'] ?? 'Failed to load goal');
+    } catch (e) {
+      throw Exception('Failed to load goal: ${e.toString()}');
+    }
+  }
+
+  Future<GoalModel> addGoalCheckIn(int goalId, {DateTime? date}) async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+    try {
+      final dateStr = date != null ? '?date=${date.toIso8601String().split('T')[0]}' : '';
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.goals}/$goalId/check-in$dateStr'),
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        return GoalModel.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+      }
+      final err = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(err['message'] ?? 'Failed to add check-in');
+    } catch (e) {
+      throw Exception('Failed to add check-in: ${e.toString()}');
+    }
+  }
+
+  Future<GamificationModel> validateGoal(int goalId, {String? note}) async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.goals}/$goalId/validate'),
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'note': note ?? ''}),
+      );
+      if (response.statusCode == 200) {
+        return GamificationModel.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+      }
+      final err = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(err['message'] ?? 'Failed to validate goal');
+    } catch (e) {
+      throw Exception('Failed to validate goal: ${e.toString()}');
+    }
+  }
+
+  Future<GamificationModel> getGamification() async {
+    await _loadTokens();
+    if (_accessToken == null) throw Exception('Not authenticated');
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.goalsGamification}'),
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        return GamificationModel.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+      }
+      final err = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(err['message'] ?? 'Failed to load gamification');
+    } catch (e) {
+      throw Exception('Failed to load gamification: ${e.toString()}');
     }
   }
 

@@ -52,6 +52,10 @@ class ApiConstants {
   static const String completeOnboarding = '/v1/onboarding/complete';
   static const String completeAssessment = '/v1/onboarding/assessment';
 
+  // Goals endpoints (patient addiction reduction)
+  static const String goals = '/v1/goals';
+  static const String goalsGamification = '/v1/goals/gamification';
+
   // Social endpoints
   static const String socialPosts = '/v1/social/posts';
   static const String socialCommentsBase = '/v1/social/comments';
