@@ -1,203 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/models/user_role.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../home/pages/home_page.dart';
+import '../../social/presentation/pages/social_feed_page.dart';
 import '../../profile/pages/profile_page.dart';
 import '../../objectifs/pages/objectifs_list_page.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart';
 
+const _sapphire  = Color(0xFF0D6078);
+const _linen     = Color(0xFFF2EBE1);
+const _indigo    = Color(0xFF022F40);
+
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
-
   @override
   State<MainNavigationPage> createState() => _MainNavigationPageState();
 }
 
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int _currentIndex = 0;
-  int? _previousIndex;
 
-  List<Widget> _getPages(bool isPatient) {
-    if (isPatient) {
-      return [
-        const HomePage(key: ValueKey('home')),
-        const ObjectifsListPage(key: ValueKey('objectifs')),
-        const ProfilePage(key: ValueKey('profile')),
-      ];
-    }
-    return [
-      const HomePage(key: ValueKey('home')),
-      const ProfilePage(key: ValueKey('profile')),
-    ];
-  }
-
-  Widget _buildHomeTab(bool isActive) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.primaryPurple.withValues(alpha: 0.12) : Colors.transparent,
-        borderRadius: BorderRadius.circular(18.r),
-        border: isActive
-            ? Border.all(
-                color: AppColors.primaryPurple.withValues(alpha: 0.3),
-                width: 1,
-              )
-            : null,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ClipOval(
-            child: Image.asset(
-              'assets/images/home.png',
-              width: 18.w,
-              height: 18.h,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Icon(
-                Icons.home,
-                size: 18.sp,
-                color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
-              ),
-            ),
-          ),
-          SizedBox(width: 5.w),
-          Text(
-            'Home',
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w500,
-              color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildObjectifsTab(bool isActive) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.primaryPurple.withValues(alpha: 0.12) : Colors.transparent,
-        borderRadius: BorderRadius.circular(18.r),
-        border: isActive
-            ? Border.all(
-                color: AppColors.primaryPurple.withValues(alpha: 0.3),
-                width: 1,
-              )
-            : null,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ClipOval(
-            child: Image.asset(
-              'assets/images/track.png',
-              width: 18.w,
-              height: 18.h,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Icon(
-                Icons.flag,
-                size: 18.sp,
-                color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
-              ),
-            ),
-          ),
-          SizedBox(width: 5.w),
-          Text(
-            'Tracks',
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w500,
-              color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileTab(String? profileImageUrl, bool isActive) {
-    final baseUrl = ApiConstants.baseUrl.replaceAll('/api', '');
-    
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.primaryPurple.withValues(alpha: 0.12) : Colors.transparent,
-        borderRadius: BorderRadius.circular(18.r),
-        border: isActive
-            ? Border.all(
-                color: AppColors.primaryPurple.withValues(alpha: 0.3),
-                width: 1,
-              )
-            : null,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Profile Image
-          if (profileImageUrl != null && profileImageUrl.isNotEmpty)
-            ClipOval(
-              child: Image.network(
-                profileImageUrl.startsWith('http')
-                    ? profileImageUrl
-                    : '$baseUrl$profileImageUrl',
-                width: 18.w,
-                height: 18.h,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 18.w,
-                    height: 18.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryPurple.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.person,
-                      size: 10.sp,
-                      color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
-                    ),
-                  );
-                },
-              ),
-            )
-          else
-            Container(
-              width: 18.w,
-              height: 18.h,
-              decoration: BoxDecoration(
-                color: AppColors.primaryPurple.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.person,
-                size: 10.sp,
-                color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
-              ),
-            ),
-          SizedBox(width: 5.w),
-          // Profile Text
-          Text(
-            'Profile',
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w500,
-              color: isActive ? AppColors.primaryPurple : AppColors.lightTextSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  final _pages = const [
+    HomePage(key: ValueKey('home')),
+    SocialFeedPage(key: ValueKey('social')),
+    ProfilePage(key: ValueKey('profile')),
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         String? profileImageUrl;
@@ -207,95 +42,90 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           profileImageUrl = state.user.profileImageUrl;
         }
 
-        final pages = _getPages(isPatient);
-        final profileIndex = isPatient ? 2 : 1;
-
-        return PopScope(
-          canPop: false,
-          child: Scaffold(
-            backgroundColor: AppColors.lightBackground,
-            body: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            switchInCurve: Curves.easeInOutCubic,
-            switchOutCurve: Curves.easeInOutCubic,
-            transitionBuilder: (Widget child, Animation<double> animation) {
-              final isForward = _currentIndex > (_previousIndex ?? 0);
-              return SlideTransition(
-                position: Tween<Offset>(
-                  begin: Offset(isForward ? 1.0 : -1.0, 0.0),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeInOutCubic,
-                )),
-                child: FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
-              );
-            },
-            child: _currentIndex < pages.length
-                ? pages[_currentIndex]
-                : pages[0],
+        return Scaffold(
+          extendBody: true,
+          body: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: _pages[_currentIndex],
           ),
           bottomNavigationBar: Container(
+            margin: EdgeInsets.fromLTRB(48.w, 0, 48.w, 28.h),
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(22.r),
               boxShadow: [
                 BoxShadow(
-                  blurRadius: 20,
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: isDark ? Colors.black.withOpacity(0.3) : theme.colorScheme.onSurface.withOpacity(0.06),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
                 ),
               ],
+              border: isDark ? Border.all(color: Colors.white.withOpacity(0.05), width: 1) : null,
             ),
-            child: SafeArea(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 2.h),
-                child: GNav(
-                  backgroundColor: Colors.transparent,
-                  color: AppColors.lightTextSecondary,
-                  activeColor: AppColors.primaryPurple,
-                  tabBackgroundColor: Colors.transparent,
-                  gap: 8.w,
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                  tabs: [
-                    GButton(
-                      icon: Icons.home,
-                      leading: _buildHomeTab(_currentIndex == 0),
-                      text: '',
-                      iconSize: 0,
-                    ),
-                    if (isPatient)
-                      GButton(
-                        icon: Icons.flag,
-                        leading: _buildObjectifsTab(_currentIndex == 1),
-                        text: '',
-                        iconSize: 0,
-                      ),
-                    GButton(
-                      icon: Icons.person,
-                      leading: _buildProfileTab(
-                        profileImageUrl,
-                        _currentIndex == profileIndex,
-                      ),
-                      text: '',
-                      iconSize: 0,
-                    ),
-                  ],
-                  selectedIndex: _currentIndex,
-                  onTabChange: (index) {
-                    setState(() {
-                      _previousIndex = _currentIndex;
-                      _currentIndex = index;
-                    });
-                  },
-                ),
-              ),
+            child: Row(
+              children: [
+                _buildTab(context, index: 0, icon: Icons.home_rounded, label: 'Home'),
+                _buildTab(context, index: 1, icon: Icons.article_rounded, label: 'Social'),
+                _buildTab(context, index: 2, icon: Icons.person_rounded, label: 'Profile', profileImageUrl: profileImageUrl),
+              ],
             ),
           ),
         ),
       );
     },
+    );
+  }
+
+  Widget _buildTab(BuildContext context, {required int index, required IconData icon, required String label, String? profileImageUrl}) {
+    final theme = Theme.of(context);
+    final isActive = _currentIndex == index;
+    final activeColor = theme.colorScheme.primary;
+    final inactiveColor = theme.colorScheme.onSurface.withOpacity(0.3);
+
+    // For profile tab with image
+    Widget iconWidget;
+    if (profileImageUrl != null && index == 2) {
+      final baseUrl = ApiConstants.baseUrl.replaceAll('/api', '');
+      final url = profileImageUrl.startsWith('http') ? profileImageUrl : '$baseUrl$profileImageUrl';
+      iconWidget = Container(
+        width: 22.w, height: 22.w,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: isActive ? activeColor : inactiveColor.withOpacity(0.15), width: 1.5),
+        ),
+        child: ClipOval(
+          child: Image.network(url, fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Icon(icon, size: 14.sp, color: isActive ? activeColor : inactiveColor)),
+        ),
+      );
+    } else {
+      iconWidget = Icon(icon, size: 22.sp, color: isActive ? activeColor : inactiveColor);
+    }
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _currentIndex = index),
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: EdgeInsets.symmetric(vertical: 10.h),
+          decoration: BoxDecoration(
+            color: isActive ? activeColor.withOpacity(0.08) : Colors.transparent,
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              iconWidget,
+              if (isActive) ...[
+                SizedBox(width: 8.w),
+                Text(label, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700, color: activeColor)),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

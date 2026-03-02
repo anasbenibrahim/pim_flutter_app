@@ -1,7 +1,10 @@
 enum AddictionType {
-  opiates('OPIATES'),
+  cannabis('CANNABIS'),
   cocaine('COCAINE'),
-  alcohol('ALCOHOL'),
+  heroin('HEROIN'),
+  ecstasy('ECSTASY'),
+  prescriptionPills('PRESCRIPTION_PILLS'),
+  syntheticDrugs('SYNTHETIC_DRUGS'),
   other('OTHER');
   
   final String value;
@@ -16,12 +19,18 @@ enum AddictionType {
   
   String get displayName {
     switch (this) {
-      case AddictionType.opiates:
-        return 'Opiates';
+      case AddictionType.cannabis:
+        return 'Cannabis';
       case AddictionType.cocaine:
         return 'Cocaine';
-      case AddictionType.alcohol:
-        return 'Alcohol';
+      case AddictionType.heroin:
+        return 'Heroin';
+      case AddictionType.ecstasy:
+        return 'Ecstasy';
+      case AddictionType.prescriptionPills:
+        return 'Prescription Pills';
+      case AddictionType.syntheticDrugs:
+        return 'Synthetic Drugs';
       case AddictionType.other:
         return 'Other';
     }

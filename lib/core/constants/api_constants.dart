@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 
 class ApiConstants {
   // Platform-aware base URL
@@ -15,10 +15,11 @@ class ApiConstants {
     }
     
     // Platform-specific URLs
-    if (Platform.isAndroid) {
-      // Android emulator uses 10.0.2.2 to access host machine's localhost
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      // 10.0.2.2 = Android emulator's special alias for host machine's localhost
+      // For physical device: run with --dart-define=API_BASE_URL=http://YOUR_IP:8080/api
       return 'http://10.0.2.2:8080/api';
-    } else if (Platform.isIOS) {
+    } else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
       // iOS simulator can use localhost
       return 'http://localhost:8080/api';
     } else {
@@ -47,8 +48,19 @@ class ApiConstants {
   static const String updatePatientProfile = '/auth/profile/patient';
   static const String updateVolontaireProfile = '/auth/profile/volontaire';
   static const String updateFamilyMemberProfile = '/auth/profile/family';
+  // Onboarding endpoints
+  static const String completeOnboarding = '/v1/onboarding/complete';
+  static const String completeAssessment = '/v1/onboarding/assessment';
+
+  // Social endpoints
+  static const String socialPosts = '/v1/social/posts';
+  static const String socialCommentsBase = '/v1/social/comments';
   
-  // Objectifs (patient tracking) endpoints
-  static const String objectifs = '/objectifs';
-  static const String weeklyAchievement = '/objectifs/achievement/weekly';
+  static String get wsUrl {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      return 'ws://10.0.2.2:8080/ws/social';
+    } else {
+      return 'ws://localhost:8080/ws/social';
+    }
+  }
 }

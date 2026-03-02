@@ -3,248 +3,154 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:pinput/pinput.dart';
-import '../../../core/widgets/custom_button.dart';
-import '../../../core/widgets/custom_app_bar.dart';
 import '../../../core/routes/app_routes.dart';
-import '../../../core/theme/app_colors.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
+const _sapphire  = Color(0xFF0D6078);
+const _linen     = Color(0xFFF2EBE1);
+const _indigo    = Color(0xFF022F40);
+const _emerald   = Color(0xFF46C67D);
+const _brick     = Color(0xFFF9623E);
+
 class OtpVerificationPage extends StatefulWidget {
   final String email;
-  
   const OtpVerificationPage({super.key, required this.email});
-  
+
   @override
   State<OtpVerificationPage> createState() => _OtpVerificationPageState();
 }
 
 class _OtpVerificationPageState extends State<OtpVerificationPage> {
   final _otpController = TextEditingController();
-  
+
   @override
   void dispose() {
     _otpController.dispose();
     super.dispose();
   }
-  
+
   void _handleVerifyOtp() {
     if (_otpController.text.length == 6) {
       context.read<AuthBloc>().add(
-        VerifyOtpEvent(
-          email: widget.email,
-          otpCode: _otpController.text.trim(),
-        ),
+        VerifyOtpEvent(email: widget.email, otpCode: _otpController.text.trim()),
       );
     } else {
-      Get.snackbar(
-        'Error',
-        'Please enter the complete 6-digit OTP code',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        borderRadius: 8.r,
-        duration: const Duration(seconds: 3),
-      );
+      Get.snackbar('Erreur', 'Veuillez entrer le code OTP complet à 6 chiffres',
+        snackPosition: SnackPosition.TOP, backgroundColor: _brick,
+        colorText: Colors.white, margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h), borderRadius: 12.r);
     }
   }
-  
-  PinTheme _getPinTheme() {
-    return PinTheme(
-      width: 50.w,
-      height: 56.h,
-      textStyle: TextStyle(
-        fontSize: 24.sp,
-        color: const Color(0xFF333333),
-        fontWeight: FontWeight.bold,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(
-          color: Colors.grey.shade300,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-    );
-  }
-  
-  PinTheme _getFocusedPinTheme() {
-    return PinTheme(
-      width: 50.w,
-      height: 56.h,
-      textStyle: TextStyle(
-        fontSize: 24.sp,
-        color: const Color(0xFF333333),
-        fontWeight: FontWeight.bold,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(
-          color: AppColors.primaryPurple,
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-    );
-  }
-  
-  PinTheme _getSubmittedPinTheme() {
-    return PinTheme(
-      width: 50.w,
-      height: 56.h,
-      textStyle: TextStyle(
-        fontSize: 24.sp,
-        color: const Color(0xFF333333),
-        fontWeight: FontWeight.bold,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.primaryPurple.withValues(alpha: 0.1),
-        border: Border.all(
-          color: AppColors.primaryPurple,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-    );
-  }
-  
+
+  PinTheme _defaultPin() => PinTheme(
+    width: 48.w, height: 56.h,
+    textStyle: TextStyle(fontSize: 22.sp, color: _indigo, fontWeight: FontWeight.w700),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      border: Border.all(color: _indigo.withOpacity(0.1)),
+      borderRadius: BorderRadius.circular(14.r),
+    ),
+  );
+
+  PinTheme _focusedPin() => _defaultPin().copyWith(
+    decoration: _defaultPin().decoration!.copyWith(
+      border: Border.all(color: _sapphire, width: 2),
+    ),
+  );
+
+  PinTheme _submittedPin() => _defaultPin().copyWith(
+    decoration: _defaultPin().decoration!.copyWith(
+      color: _sapphire.withOpacity(0.05),
+      border: Border.all(color: _sapphire),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: const CustomAppBar(
-        title: 'Verify OTP',
+      backgroundColor: _linen,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent, elevation: 0,
+        leading: IconButton(icon: Icon(Icons.arrow_back_ios_new_rounded, color: _indigo, size: 20.sp), onPressed: () => Navigator.pop(context)),
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
-            Get.snackbar(
-              'Error',
-              state.message,
-              snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
-              margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              borderRadius: 8.r,
-              duration: const Duration(seconds: 3),
-            );
+            Get.snackbar('Erreur', state.message, snackPosition: SnackPosition.TOP,
+              backgroundColor: _brick, colorText: Colors.white,
+              margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h), borderRadius: 12.r);
           } else if (state is OtpVerifiedState) {
-            Navigator.pushReplacementNamed(
-              context,
-              AppRoutes.resetPassword,
-              arguments: {
-                'email': state.email,
-                'otpCode': state.otpCode,
-              },
-            );
+            Navigator.pushReplacementNamed(context, AppRoutes.resetPassword,
+              arguments: {'email': state.email, 'otpCode': state.otpCode});
           }
         },
         builder: (context, state) {
-          return SafeArea(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                    SizedBox(height: 40.h),
-                    Text(
-                      'Enter OTP Code',
-                      style: TextStyle(
-                        fontSize: 24.sp,
-                        color: const Color(0xFF333333),
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'sans-serif',
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      'We\'ve sent a 6-digit code to ${widget.email}',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: const Color(0xFF666666),
-                        fontFamily: 'sans-serif',
-                      ),
-                    ),
-                    SizedBox(height: 40.h),
-                    // OTP Field Label
-                    Text(
-                      'OTP Code',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: const Color(0xFF666666),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(height: 12.h),
-                    // PIN Input with 6 cases - Centered
-                    Center(
-                      child: Pinput(
-                        length: 6,
-                        controller: _otpController,
-                        defaultPinTheme: _getPinTheme(),
-                        focusedPinTheme: _getFocusedPinTheme(),
-                        submittedPinTheme: _getSubmittedPinTheme(),
-                        pinAnimationType: PinAnimationType.fade,
-                        keyboardType: TextInputType.number,
-                        autofocus: true,
-                        onCompleted: (pin) {
-                          // Auto-verify when all 6 digits are entered
-                          _handleVerifyOtp();
-                        },
-                        cursor: Container(
-                          width: 2.w,
-                          height: 24.h,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryPurple,
-                            borderRadius: BorderRadius.circular(1.r),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 12.h),
-                    // Resend OTP Link
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        onTap: () {
-                          context.read<AuthBloc>().add(
-                            ForgotPasswordEvent(email: widget.email),
-                          );
-                          Get.snackbar(
-                            'Success',
-                            'OTP code resent to your email',
-                            snackPosition: SnackPosition.TOP,
-                            backgroundColor: Colors.green,
-                            colorText: Colors.white,
-                            margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                            borderRadius: 8.r,
-                            duration: const Duration(seconds: 3),
-                          );
-                        },
-                        child: Text(
-                          'Resend OTP',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: AppColors.primaryPurple,
-                            fontFamily: 'sans-serif',
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 32.h),
-                    // Verify Button
-                    CustomButton(
-                      text: 'Verify OTP',
-                      onPressed: state is AuthLoading ? null : _handleVerifyOtp,
-                      isLoading: state is AuthLoading,
-                    ),
-                  ],
+          return SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 8.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(height: 20.h),
+                Container(
+                  width: 80.w, height: 80.w,
+                  decoration: BoxDecoration(color: _sapphire.withOpacity(0.1), shape: BoxShape.circle),
+                  child: Icon(Icons.security_rounded, color: _sapphire, size: 40.sp),
                 ),
-              ),
-            );
+                SizedBox(height: 28.h),
+                Text('Code de vérification', style: TextStyle(fontSize: 26.sp, fontWeight: FontWeight.w800, color: _indigo, letterSpacing: -0.5), textAlign: TextAlign.center),
+                SizedBox(height: 10.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w),
+                  child: Text('Entrez le code à 6 chiffres envoyé à\n${widget.email}',
+                    style: TextStyle(fontSize: 14.sp, color: _indigo.withOpacity(0.5), height: 1.5), textAlign: TextAlign.center),
+                ),
+                SizedBox(height: 40.h),
+
+                // PIN Input
+                Pinput(
+                  length: 6, controller: _otpController,
+                  defaultPinTheme: _defaultPin(), focusedPinTheme: _focusedPin(), submittedPinTheme: _submittedPin(),
+                  pinAnimationType: PinAnimationType.fade, keyboardType: TextInputType.number, autofocus: true,
+                  onCompleted: (pin) => _handleVerifyOtp(),
+                  cursor: Container(width: 2.w, height: 22.h, decoration: BoxDecoration(color: _sapphire, borderRadius: BorderRadius.circular(1.r))),
+                ),
+                SizedBox(height: 36.h),
+
+                // Verify Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: state is AuthLoading ? null : _handleVerifyOtp,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _sapphire, foregroundColor: Colors.white,
+                      disabledBackgroundColor: _sapphire.withOpacity(0.5),
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)), elevation: 0,
+                    ),
+                    child: state is AuthLoading
+                        ? SizedBox(height: 20.h, width: 20.h, child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                            Text('Vérifier', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                            SizedBox(width: 8.w), Icon(Icons.arrow_forward_rounded, size: 18.sp),
+                          ]),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+
+                // Resend
+                TextButton(
+                  onPressed: () {
+                    context.read<AuthBloc>().add(ForgotPasswordEvent(email: widget.email));
+                    Get.snackbar('Succès', 'Nouveau code envoyé à votre email',
+                      snackPosition: SnackPosition.TOP, backgroundColor: _emerald,
+                      colorText: Colors.white, margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h), borderRadius: 12.r);
+                  },
+                  child: Text('Renvoyer le code', style: TextStyle(fontSize: 14.sp, color: _sapphire, fontWeight: FontWeight.w600)),
+                ),
+              ],
+            ),
+          );
         },
       ),
     );

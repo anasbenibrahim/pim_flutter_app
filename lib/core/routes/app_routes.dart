@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../features/auth/pages/get_started_page.dart';
 import '../../features/auth/pages/login_page.dart';
 import '../../features/auth/pages/role_selection_page.dart';
-import '../../features/auth/pages/register_patient_page.dart';
+import '../../features/auth/pages/register_patient_simple_page.dart';
 import '../../features/auth/pages/register_volontaire_page.dart';
 import '../../features/auth/pages/register_family_page.dart';
 import '../../features/auth/pages/forgot_password_page.dart';
@@ -13,8 +13,14 @@ import '../../features/home/pages/home_page.dart';
 import '../../features/profile/pages/profile_page.dart';
 import '../../features/profile/pages/update_profile_page.dart';
 import '../../features/navigation/pages/main_navigation_page.dart';
-import '../../features/objectifs/pages/objectifs_list_page.dart';
-import '../../features/badges/pages/my_badges_page.dart';
+import '../../features/onboarding/pages/onboarding_wrapper_page.dart';
+import '../../features/welcome/pages/welcome_carousel_page.dart';
+import '../../features/assessment/assessment_page.dart';
+import '../../features/notifications/pages/notifications_page.dart';
+import '../../features/social/data/models/post_model.dart';
+import '../../features/social/presentation/pages/social_feed_page.dart';
+import '../../features/social/presentation/pages/create_post_page.dart';
+import '../../features/social/presentation/pages/post_detail_page.dart';
 
 class AppRoutes {
   static const String getStarted = '/get-started';
@@ -31,11 +37,21 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String updateProfile = '/update-profile';
   static const String mainNavigation = '/main-navigation';
-  static const String objectifs = '/objectifs';
-  static const String myBadges = '/my-badges';
-
+  static const String onboarding = '/onboarding';
+  static const String welcome = '/welcome';
+  static const String assessment = '/assessment';
+  static const String notifications = '/notifications';
+  
+  // Social routes
+  static const String socialFeed = '/social-feed';
+  static const String createPost = '/create-post';
+  static const String postDetail = '/post-detail';
+  
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case welcome:
+        return MaterialPageRoute(builder: (_) => const WelcomeCarouselPage());
+
       case getStarted:
         return MaterialPageRoute(builder: (_) => const GetStartedPage());
       
@@ -46,7 +62,7 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const RoleSelectionPage());
       
       case registerPatient:
-        return MaterialPageRoute(builder: (_) => const RegisterPatientPage());
+        return MaterialPageRoute(builder: (_) => const RegisterPatientSimplePage());
       
       case registerVolontaire:
         return MaterialPageRoute(builder: (_) => const RegisterVolontairePage());
@@ -96,6 +112,30 @@ class AppRoutes {
       
       case mainNavigation:
         return MaterialPageRoute(builder: (_) => const MainNavigationPage());
+
+      case onboarding:
+        return MaterialPageRoute(builder: (_) => const OnboardingWrapperPage());
+
+      case assessment:
+        return MaterialPageRoute(builder: (_) => const AssessmentPage());
+      
+      case notifications:
+        return MaterialPageRoute(builder: (_) => const NotificationsPage());
+      
+      case socialFeed:
+        return MaterialPageRoute(builder: (_) => const SocialFeedPage());
+        
+      case createPost:
+        return MaterialPageRoute(builder: (_) => const CreatePostPage());
+        
+      case postDetail:
+        final post = settings.arguments;
+        return MaterialPageRoute(
+          builder: (_) => PostDetailPage(
+            postId: post is PostModel ? post.id : post as int,
+            initialPost: post is PostModel ? post : null,
+          ),
+        );
       
       case objectifs:
         return MaterialPageRoute(builder: (_) => const ObjectifsListPage());

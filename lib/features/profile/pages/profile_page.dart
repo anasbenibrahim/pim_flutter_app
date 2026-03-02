@@ -1,272 +1,170 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../../../core/widgets/custom_app_bar.dart';
-import '../../../core/widgets/menu_list_tile.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/routes/app_routes.dart';
-import '../../../core/models/user_role.dart';
+import '../../../core/controllers/theme_controller.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_event.dart';
 import '../../auth/bloc/auth_state.dart';
 
+import '../../../core/theme/app_colors.dart';
+
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
-  Widget _buildProfileImage(String? profileImageUrl) {
-    if (profileImageUrl == null || profileImageUrl.isEmpty) {
-      return CircleAvatar(
-        radius: 50.r,
-        backgroundColor: AppColors.primaryPurple.withValues(alpha: 0.2),
-        child: Icon(
-          Icons.person,
-          size: 50.sp,
-          color: AppColors.primaryPurple,
-        ),
-      );
-    }
-    
-    final baseUrl = ApiConstants.baseUrl.replaceAll('/api', '');
-    final imageUrl = profileImageUrl.startsWith('http')
-        ? profileImageUrl
-        : '$baseUrl$profileImageUrl';
-    
-    return CircleAvatar(
-      radius: 50.r,
-      backgroundColor: AppColors.primaryPurple.withValues(alpha: 0.2),
-      backgroundImage: NetworkImage(imageUrl),
-      onBackgroundImageError: (exception, stackTrace) {
-        // Handle error if image fails to load
-      },
-      child: profileImageUrl.isEmpty
-          ? Icon(
-              Icons.person,
-              size: 50.sp,
-              color: AppColors.primaryPurple,
-            )
-          : null,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
-      appBar: const CustomAppBar(
-        title: 'Profile',
-        showBackButton: false,
-      ),
+      backgroundColor: theme.colorScheme.background,
       body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           if (state is AuthAuthenticated) {
-            return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Column(
-                children: [
-                  SizedBox(height: 32.h),
-                  // Profile Image
-                  Center(
-                    child: _buildProfileImage(state.user.profileImageUrl),
-                  ),
-                  SizedBox(height: 24.h),
-                  // User Name
-                  Text(
-                    '${state.user.prenom} ${state.user.nom}',
-                    style: TextStyle(
-                      fontSize: 24.sp,
-                      color: AppColors.lightText,
-                      fontWeight: FontWeight.bold,
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 120.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top bar
+                    Center(
+                      child: Text('Profile', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface)),
                     ),
-                  ),
-                  SizedBox(height: 8.h),
-                  // User Email
-                  Text(
-                    state.user.email,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: AppColors.lightTextSecondary,
+                    SizedBox(height: 28.h),
+
+                    // Avatar + Info
+                    _buildHeader(context, state.user.prenom, state.user.nom, state.user.email, state.user.profileImageUrl),
+                    SizedBox(height: 36.h),
+
+                    // Account Section
+                    _sectionTitle(context, 'Account'),
+                    SizedBox(height: 10.h),
+                    _tile(
+                      context,
+                      icon: Icons.edit_note_rounded, color: AppColors.sapphire,
+                      title: 'Edit Profile',
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.updateProfile, arguments: {'user': state.user}),
                     ),
-                  ),
-                  // Referral Code Section (for patients)
-                  if (state.user.role == UserRole.patient) ...[
-                    SizedBox(height: 32.h),
-                    Card(
-                      elevation: 0,
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.r),
-                        side: BorderSide(color: Colors.grey.shade200),
+                    SizedBox(height: 24.h),
+
+                    // Preferences Section
+                    _sectionTitle(context, 'Preferences'),
+                    SizedBox(height: 10.h),
+                    Obx(() => _tile(
+                      context,
+                      icon: Icons.dark_mode_outlined, color: theme.colorScheme.onSurface,
+                      title: 'Dark Mode',
+                      trailing: Switch(
+                        value: Get.find<ThemeController>().isDarkMode,
+                        activeColor: theme.colorScheme.primary,
+                        onChanged: (_) => Get.find<ThemeController>().toggleTheme(),
                       ),
-                      child: Padding(
-                        padding: EdgeInsets.all(20.w),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.all(8.w),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryPurple.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(8.r),
-                                  ),
-                                  child: Icon(
-                                    Icons.share,
-                                    color: AppColors.primaryPurple,
-                                    size: 20.sp,
-                                  ),
-                                ),
-                                SizedBox(width: 12.w),
-                                Text(
-                                  'Your Referral Code',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18.sp,
-                                    color: AppColors.lightText,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 16.h),
-                            Container(
-                              width: double.infinity,
-                              padding: EdgeInsets.all(16.w),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryPurple.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8.r),
-                                border: Border.all(
-                                  color: AppColors.primaryPurple.withValues(alpha: 0.3),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      state.user.referralCode ?? 'Loading...',
-                                      style: TextStyle(
-                                        fontSize: 18.sp,
-                                        fontWeight: FontWeight.bold,
-                                        color: state.user.referralCode != null 
-                                            ? AppColors.primaryPurple 
-                                            : AppColors.lightTextSecondary,
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                  ),
-                                  if (state.user.referralCode != null)
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.copy,
-                                        color: AppColors.primaryPurple,
-                                        size: 20.sp,
-                                      ),
-                                      onPressed: () async {
-                                        await Clipboard.setData(
-                                          ClipboardData(text: state.user.referralCode!),
-                                        );
-                                        Get.snackbar(
-                                          'Success',
-                                          'Referral code copied!',
-                                          snackPosition: SnackPosition.TOP,
-                                          backgroundColor: AppColors.primaryPurple,
-                                          colorText: Colors.white,
-                                          margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                                          borderRadius: 8.r,
-                                          duration: const Duration(seconds: 3),
-                                        );
-                                      },
-                                    ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: 8.h),
-                            Text(
-                              'Share this code with your family members so they can join',
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                color: AppColors.lightTextSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    )),
+                    SizedBox(height: 8.h),
+                    _tile(context, icon: Icons.notifications_none_rounded, color: AppColors.emerald, title: 'Notifications'),
+                    SizedBox(height: 24.h),
+
+                    // Support Section
+                    _sectionTitle(context, 'Support'),
+                    SizedBox(height: 10.h),
+                    _tile(context, icon: Icons.info_outline_rounded, color: AppColors.sapphire, title: 'About HopeUp'),
+                    SizedBox(height: 24.h),
+
+                    // Logout
+                    _tile(
+                      context,
+                      icon: Icons.logout_rounded, color: AppColors.brick,
+                      title: 'Log Out', titleColor: AppColors.brick,
+                      onTap: () {
+                        context.read<AuthBloc>().add(const LogoutEvent());
+                        Navigator.pushReplacementNamed(context, AppRoutes.getStarted);
+                      },
                     ),
                   ],
-                  SizedBox(height: 40.h),
-                  // Menu Items
-                  if (state.user.role == UserRole.patient)
-                    MenuListTile(
-                      icon: Icons.emoji_events_outlined,
-                      title: 'My Badges',
-                      onTap: () => Navigator.pushNamed(context, AppRoutes.myBadges),
-                      showArrow: true,
-                    ),
-                  MenuListTile(
-                    icon: Icons.person_outline,
-                    title: 'Manage Profile',
-                    showArrow: false,
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.updateProfile,
-                        arguments: {'user': state.user},
-                      );
-                    },
-                  ),
-                  MenuListTile(
-                    icon: Icons.tune,
-                    title: 'Customize My Level',
-                    onTap: null, // Static, not clickable
-                    showArrow: false,
-                  ),
-                  MenuListTile(
-                    icon: Icons.notifications_outlined,
-                    title: 'Manage Notification',
-                    onTap: null, // Static, not clickable
-                    showArrow: false,
-                  ),
-                  MenuListTile(
-                    icon: Icons.help_outline,
-                    title: 'FAQ',
-                    onTap: null, // Static, not clickable
-                    showArrow: false,
-                  ),
-                  MenuListTile(
-                    icon: Icons.settings_outlined,
-                    title: 'Settings',
-                    onTap: null, // Static, not clickable
-                    showArrow: false,
-                  ),
-                  MenuListTile(
-                    icon: Icons.logout,
-                    title: 'Log Out',
-                    iconColor: Colors.red,
-                    showArrow: false,
-                    onTap: () {
-                      context.read<AuthBloc>().add(const LogoutEvent());
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        AppRoutes.getStarted,
-                        (route) => false,
-                      );
-                    },
-                  ),
-                  SizedBox(height: 32.h),
-                ],
+                ),
               ),
             );
           } else {
-            return Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primaryPurple,
-              ),
-            );
+            return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary, strokeWidth: 2));
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, String prenom, String nom, String email, String? profileImageUrl) {
+    final baseUrl = ApiConstants.baseUrl.replaceAll('/api', '');
+    final imageUrl = profileImageUrl != null
+        ? (profileImageUrl.startsWith('http') ? profileImageUrl : '$baseUrl$profileImageUrl')
+        : null;
+
+    final theme = Theme.of(context);
+    return Center(
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(3.w),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: theme.colorScheme.primary.withOpacity(0.15), width: 3),
+            ),
+            child: CircleAvatar(
+              radius: 52.r,
+              backgroundColor: theme.colorScheme.surface,
+              backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
+              child: imageUrl == null ? Icon(Icons.person_rounded, size: 48.sp, color: theme.colorScheme.primary) : null,
+            ),
+          ),
+          SizedBox(height: 18.h),
+          Text('$prenom $nom', style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface, letterSpacing: -0.5)),
+          SizedBox(height: 4.h),
+          Text(email, style: TextStyle(fontSize: 14.sp, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionTitle(BuildContext context, String text) {
+    return Text(text, style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)));
+  }
+
+  Widget _tile(
+    BuildContext context, {
+    required IconData icon,
+    required Color color,
+    required String title,
+    Color? titleColor,
+    Widget? trailing,
+    VoidCallback? onTap,
+  }) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(16.r),
+          border: theme.brightness == Brightness.dark ? Border.all(color: Colors.white.withOpacity(0.05)) : null,
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(color: color.withOpacity(0.08), borderRadius: BorderRadius.circular(10.r)),
+              child: Icon(icon, color: color, size: 20.sp),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Text(title, style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600, color: titleColor ?? theme.colorScheme.onSurface)),
+            ),
+            if (trailing != null) trailing
+            else if (onTap != null)
+              Icon(Icons.chevron_right_rounded, size: 22.sp, color: theme.colorScheme.onSurface.withOpacity(0.2)),
+          ],
+        ),
       ),
     );
   }

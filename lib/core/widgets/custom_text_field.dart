@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../theme/app_colors.dart';
+import 'package:pimapp/core/theme/app_colors.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
@@ -11,7 +11,8 @@ class CustomTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final Widget? suffixIcon;
   final bool enabled;
-
+  final bool readOnly;
+  
   const CustomTextField({
     super.key,
     required this.label,
@@ -22,6 +23,7 @@ class CustomTextField extends StatelessWidget {
     this.validator,
     this.suffixIcon,
     this.enabled = true,
+    this.readOnly = false,
   });
 
   @override
@@ -33,8 +35,8 @@ class CustomTextField extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 14.sp,
-            color: AppColors.lightText,
-            fontWeight: FontWeight.w500,
+            color: AppColors.getPremiumTextSecondary(context).withOpacity(0.9),
+            fontWeight: FontWeight.normal,
             fontFamily: 'sans-serif',
           ),
         ),
@@ -42,11 +44,11 @@ class CustomTextField extends StatelessWidget {
         Container(
           height: 50.h,
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12.r),
+            color: AppColors.getGlassColor(context).withOpacity(0.05),
+            borderRadius: BorderRadius.circular(25.r),
             border: Border.all(
-              color: Colors.grey.shade300,
-              width: 1,
+              color: AppColors.getGlassBorder(context),
+              width: 1.w,
             ),
           ),
           child: Padding(
@@ -63,9 +65,10 @@ class CustomTextField extends StatelessWidget {
                       keyboardType: keyboardType,
                       validator: validator,
                       enabled: enabled,
+                      readOnly: readOnly,
                       style: TextStyle(
                         fontSize: 16.sp,
-                        color: AppColors.lightText,
+                        color: AppColors.getPremiumText(context),
                         fontWeight: FontWeight.normal,
                         fontFamily: 'sans-serif',
                       ),
@@ -75,7 +78,7 @@ class CustomTextField extends StatelessWidget {
                         hintText: hint,
                         hintStyle: TextStyle(
                           fontSize: 16.sp,
-                          color: AppColors.lightTextSecondary,
+                          color: AppColors.getPremiumTextSecondary(context).withOpacity(0.5),
                           fontWeight: FontWeight.normal,
                           fontFamily: 'sans-serif',
                         ),
@@ -91,7 +94,7 @@ class CustomTextField extends StatelessWidget {
                     ),
                   ),
                 ),
-                suffixIcon ?? const SizedBox.shrink(),
+                if (suffixIcon != null) suffixIcon!,
               ],
             ),
           ),

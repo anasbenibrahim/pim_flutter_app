@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -71,8 +72,8 @@ class ApiService {
     required String prenom,
     required int age,
     required DateTime dateNaissance,
-    required DateTime sobrietyDate,
-    required String addiction,
+    DateTime? sobrietyDate,
+    String? addiction,
     String? imagePath,
   }) async {
     try {
@@ -89,7 +90,7 @@ class ApiService {
         'prenom': prenom,
         'age': age,
         'dateNaissance': dateNaissance.toIso8601String().split('T')[0],
-        'sobrietyDate': sobrietyDate.toIso8601String().split('T')[0],
+        'sobrietyDate': sobrietyDate?.toIso8601String().split('T')[0],
         'addiction': addiction,
       };
       
@@ -101,7 +102,10 @@ class ApiService {
         request.files.add(await http.MultipartFile.fromPath('image', imagePath));
       }
       
-      final streamedResponse = await request.send();
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('Connection timeout. Is the backend running at ${ApiConstants.baseUrl}?'),
+      );
       final response = await http.Response.fromStream(streamedResponse);
       
       if (response.statusCode == 200) {
@@ -115,11 +119,17 @@ class ApiService {
           message: 'OTP sent',
         );
       } else {
-        final error = jsonDecode(response.body) as Map<String, dynamic>;
-        throw Exception(error['message'] ?? 'Registration failed');
+        final String message = _parseErrorMessage(response.body, 'Registration failed');
+        throw Exception(message);
       }
+    } on TimeoutException catch (e) {
+      throw Exception('Registration failed: ${e.message}');
     } catch (e) {
-      throw Exception('Registration failed: ${e.toString()}');
+      final msg = e.toString();
+      if (msg.contains('Connection refused') || msg.contains('Failed host lookup') || msg.contains('SocketException')) {
+        throw Exception('Cannot reach server. Ensure Spring backend is running (mvn spring-boot:run) and try again.');
+      }
+      throw Exception('Registration failed: $msg');
     }
   }
   
@@ -152,7 +162,10 @@ class ApiService {
         request.files.add(await http.MultipartFile.fromPath('image', imagePath));
       }
       
-      final streamedResponse = await request.send();
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('Connection timeout. Is the backend running at ${ApiConstants.baseUrl}?'),
+      );
       final response = await http.Response.fromStream(streamedResponse);
       
       if (response.statusCode == 200) {
@@ -166,11 +179,17 @@ class ApiService {
           message: 'OTP sent',
         );
       } else {
-        final error = jsonDecode(response.body) as Map<String, dynamic>;
-        throw Exception(error['message'] ?? 'Registration failed');
+        final String message = _parseErrorMessage(response.body, 'Registration failed');
+        throw Exception(message);
       }
+    } on TimeoutException catch (e) {
+      throw Exception('Registration failed: ${e.message}');
     } catch (e) {
-      throw Exception('Registration failed: ${e.toString()}');
+      final msg = e.toString();
+      if (msg.contains('Connection refused') || msg.contains('Failed host lookup') || msg.contains('SocketException')) {
+        throw Exception('Cannot reach server. Ensure Spring backend is running (mvn spring-boot:run) and try again.');
+      }
+      throw Exception('Registration failed: $msg');
     }
   }
   
@@ -203,7 +222,10 @@ class ApiService {
         request.files.add(await http.MultipartFile.fromPath('image', imagePath));
       }
       
-      final streamedResponse = await request.send();
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('Connection timeout. Is the backend running at ${ApiConstants.baseUrl}?'),
+      );
       final response = await http.Response.fromStream(streamedResponse);
       
       if (response.statusCode == 200) {
@@ -217,11 +239,28 @@ class ApiService {
           message: 'OTP sent',
         );
       } else {
-        final error = jsonDecode(response.body) as Map<String, dynamic>;
-        throw Exception(error['message'] ?? 'Registration failed');
+        final String message = _parseErrorMessage(response.body, 'Registration failed');
+        throw Exception(message);
       }
+    } on TimeoutException catch (e) {
+      throw Exception('Registration failed: ${e.message}');
     } catch (e) {
-      throw Exception('Registration failed: ${e.toString()}');
+      final msg = e.toString();
+      if (msg.contains('Connection refused') || msg.contains('Failed host lookup') || msg.contains('SocketException')) {
+        throw Exception('Cannot reach server. Ensure Spring backend is running (mvn spring-boot:run) and try again.');
+      }
+      throw Exception('Registration failed: $msg');
+    }
+  }
+  
+  /// Parse error message from API response body
+  String _parseErrorMessage(String body, String fallback) {
+    if (body.isEmpty) return fallback;
+    try {
+      final error = jsonDecode(body) as Map<String, dynamic>;
+      return error['message'] as String? ?? fallback;
+    } catch (_) {
+      return fallback;
     }
   }
   
@@ -520,98 +559,107 @@ class ApiService {
     }
   }
 
-  // Objectifs (patient objective tracking)
-  Future<List<ObjectifModel>> getObjectifs() async {
-    await _loadTokens();
-    if (_accessToken == null) throw Exception('Not authenticated');
-    
-    final response = await http.get(
-      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.objectifs}'),
-      headers: {
-        'Authorization': 'Bearer $_accessToken',
-        'Content-Type': 'application/json',
-      },
-    );
-    
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body) as List<dynamic>;
-      return data.map((e) => ObjectifModel.fromJson(e as Map<String, dynamic>)).toList();
-    } else {
-      final error = jsonDecode(response.body) as Map<String, dynamic>;
-      throw Exception(error['message'] ?? 'Failed to load objectifs');
-    }
-  }
-
-  Future<ObjectifModel> createObjectif({
-    required DateTime objectifDate,
-    required MoodType mood,
-    required bool consumed,
-    String? notes,
+  Future<void> completeOnboarding({
+    required DateTime? sobrietyDate,
+    required String? substance,
+    required String? lifeRhythm,
+    required String? activityStatus,
+    required String? region,
+    List<String>? triggers,
+    List<String>? copingMechanisms,
+    List<String>? motivations,
   }) async {
     await _loadTokens();
     if (_accessToken == null) throw Exception('Not authenticated');
-    
+
+    print('DEBUG: Request URL: ${ApiConstants.baseUrl}${ApiConstants.completeOnboarding}');
+    print('DEBUG: Request Body: ${jsonEncode({
+      'sobrietyDate': sobrietyDate?.toIso8601String().split('T')[0],
+      'addiction': substance,
+      'lifeRhythm': lifeRhythm,
+      'activityStatus': activityStatus,
+      'region': region,
+      'triggers': triggers,
+      'copingMechanisms': copingMechanisms,
+      'motivations': motivations,
+    })}');
+
     final response = await http.post(
-      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.objectifs}'),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.completeOnboarding}'),
       headers: {
-        'Authorization': 'Bearer $_accessToken',
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $_accessToken',
       },
       body: jsonEncode({
-        'objectifDate': objectifDate.toIso8601String().split('T')[0],
-        'mood': mood.name.toUpperCase(),
-        'consumed': consumed,
-        'notes': notes,
+        'sobrietyDate': sobrietyDate?.toIso8601String().split('T')[0],
+        'addiction': substance,
+        'lifeRhythm': lifeRhythm,
+        'activityStatus': activityStatus,
+        'region': region,
+        'triggers': triggers,
+        'copingMechanisms': copingMechanisms,
+        'motivations': motivations,
       }),
     );
-    
-    if (response.statusCode == 201) {
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      return ObjectifModel.fromJson(data);
-    } else {
-      final error = jsonDecode(response.body) as Map<String, dynamic>;
-      throw Exception(error['message'] ?? 'Failed to create objectif');
-    }
-  }
 
-  Future<void> deleteObjectif(int id) async {
-    await _loadTokens();
-    if (_accessToken == null) throw Exception('Not authenticated');
-    
-    final response = await http.delete(
-      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.objectifs}/$id'),
-      headers: {'Authorization': 'Bearer $_accessToken'},
-    );
-    
+    print('DEBUG: Response Status Code: ${response.statusCode}');
+    print('DEBUG: Response Body: ${response.body}');
+
     if (response.statusCode != 200) {
-      final error = jsonDecode(response.body) as Map<String, dynamic>;
-      throw Exception(error['message'] ?? 'Failed to delete objectif');
+      final error = jsonDecode(response.body);
+      throw Exception(error['message'] ?? 'Failed to complete onboarding');
     }
   }
 
-  Future<WeeklyAchievementModel> getWeeklyAchievement({String? weekStart}) async {
+  Future<void> submitAssessment({
+    String? gender,
+    String? healthGoal,
+    int? moodLevel,
+    int? sleepQuality,
+    int? stressLevel,
+    bool? soughtProfessionalHelp,
+    bool? takingMedications,
+    String? medications,
+    bool? physicalDistress,
+    List<String>? symptoms,
+    List<String>? personalityTraits,
+    List<String>? mentalHealthConcerns,
+  }) async {
     await _loadTokens();
     if (_accessToken == null) throw Exception('Not authenticated');
 
-    var uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.weeklyAchievement}');
-    if (weekStart != null) {
-      uri = uri.replace(queryParameters: {'weekStart': weekStart});
-    }
-
-    final response = await http.get(
-      uri,
+    final response = await http.post(
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.completeAssessment}'),
       headers: {
-        'Authorization': 'Bearer $_accessToken',
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $_accessToken',
       },
+      body: jsonEncode({
+        'gender': gender,
+        'healthGoal': healthGoal,
+        'moodLevel': moodLevel,
+        'sleepQuality': sleepQuality,
+        'stressLevel': stressLevel,
+        'soughtProfessionalHelp': soughtProfessionalHelp,
+        'takingMedications': takingMedications,
+        'medications': medications,
+        'physicalDistress': physicalDistress,
+        'symptoms': symptoms,
+        'personalityTraits': personalityTraits,
+        'mentalHealthConcerns': mentalHealthConcerns,
+      }),
     );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      return WeeklyAchievementModel.fromJson(data);
-    } else {
-      final error = jsonDecode(response.body) as Map<String, dynamic>;
-      throw Exception(error['message'] ?? 'Failed to load achievement');
+    if (response.statusCode != 200) {
+      String message = 'Failed to submit assessment';
+      try {
+        final error = jsonDecode(response.body);
+        message = error['message'] ?? message;
+      } catch (_) {
+        // Backend might return HTML error page instead of JSON
+        message = 'An unexpected error occurred: ${response.body.length > 200 ? response.body.substring(0, 200) : response.body}';
+      }
+      throw Exception(message);
     }
   }
 }
