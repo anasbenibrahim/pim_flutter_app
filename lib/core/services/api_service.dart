@@ -7,7 +7,6 @@ import '../models/auth_response.dart';
 import '../models/user_model.dart';
 import '../models/user_role.dart';
 import '../models/objectif_model.dart';
-import '../models/mood_type.dart';
 import '../models/weekly_achievement_model.dart';
 import '../models/achievement_badge.dart';
 import '../models/goal_model.dart';

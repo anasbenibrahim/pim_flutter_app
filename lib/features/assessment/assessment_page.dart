@@ -10,7 +10,6 @@ import '../auth/bloc/auth_bloc.dart';
 import '../auth/bloc/auth_event.dart';
 import '../auth/bloc/auth_state.dart';
 import '../../core/services/risk_assessment_service.dart';
-import '../../core/models/user_model.dart';
 import 'steps/q1_health_goal.dart';
 import 'steps/q2_gender.dart';
 import 'steps/q3_mood.dart';

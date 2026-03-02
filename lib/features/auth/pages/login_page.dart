@@ -11,7 +11,6 @@ import '../bloc/auth_state.dart';
 const _sapphire  = Color(0xFF0D6078);
 const _linen     = Color(0xFFF2EBE1);
 const _indigo    = Color(0xFF022F40);
-const _emerald   = Color(0xFF46C67D);
 const _brick     = Color(0xFFF9623E);
 
 class LoginPage extends StatefulWidget {
