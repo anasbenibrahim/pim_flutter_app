@@ -16,9 +16,9 @@ class ApiConstants {
     
     // Platform-specific URLs
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      // Use your computer's local IP for physical devices and emulators
-      // 10.0.2.2 only works for emulators. 192.168.1.16 is your PC's IP.
-      return 'http://192.168.98.163:8080/api';
+      // 10.0.2.2 = Android emulator's special alias for host machine's localhost
+      // For physical device: run with --dart-define=API_BASE_URL=http://YOUR_IP:8080/api
+      return 'http://10.0.2.2:8080/api';
     } else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
       // iOS simulator can use localhost
       return 'http://localhost:8080/api';
@@ -58,7 +58,7 @@ class ApiConstants {
   
   static String get wsUrl {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      return 'ws://192.168.98.163:8080/ws/social';
+      return 'ws://10.0.2.2:8080/ws/social';
     } else {
       return 'ws://localhost:8080/ws/social';
     }

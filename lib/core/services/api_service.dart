@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -98,7 +99,10 @@ class ApiService {
         request.files.add(await http.MultipartFile.fromPath('image', imagePath));
       }
       
-      final streamedResponse = await request.send();
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('Connection timeout. Is the backend running at ${ApiConstants.baseUrl}?'),
+      );
       final response = await http.Response.fromStream(streamedResponse);
       
       if (response.statusCode == 200) {
@@ -112,11 +116,17 @@ class ApiService {
           message: 'OTP sent',
         );
       } else {
-        final error = jsonDecode(response.body) as Map<String, dynamic>;
-        throw Exception(error['message'] ?? 'Registration failed');
+        final String message = _parseErrorMessage(response.body, 'Registration failed');
+        throw Exception(message);
       }
+    } on TimeoutException catch (e) {
+      throw Exception('Registration failed: ${e.message}');
     } catch (e) {
-      throw Exception('Registration failed: ${e.toString()}');
+      final msg = e.toString();
+      if (msg.contains('Connection refused') || msg.contains('Failed host lookup') || msg.contains('SocketException')) {
+        throw Exception('Cannot reach server. Ensure Spring backend is running (mvn spring-boot:run) and try again.');
+      }
+      throw Exception('Registration failed: $msg');
     }
   }
   
@@ -149,7 +159,10 @@ class ApiService {
         request.files.add(await http.MultipartFile.fromPath('image', imagePath));
       }
       
-      final streamedResponse = await request.send();
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('Connection timeout. Is the backend running at ${ApiConstants.baseUrl}?'),
+      );
       final response = await http.Response.fromStream(streamedResponse);
       
       if (response.statusCode == 200) {
@@ -163,11 +176,17 @@ class ApiService {
           message: 'OTP sent',
         );
       } else {
-        final error = jsonDecode(response.body) as Map<String, dynamic>;
-        throw Exception(error['message'] ?? 'Registration failed');
+        final String message = _parseErrorMessage(response.body, 'Registration failed');
+        throw Exception(message);
       }
+    } on TimeoutException catch (e) {
+      throw Exception('Registration failed: ${e.message}');
     } catch (e) {
-      throw Exception('Registration failed: ${e.toString()}');
+      final msg = e.toString();
+      if (msg.contains('Connection refused') || msg.contains('Failed host lookup') || msg.contains('SocketException')) {
+        throw Exception('Cannot reach server. Ensure Spring backend is running (mvn spring-boot:run) and try again.');
+      }
+      throw Exception('Registration failed: $msg');
     }
   }
   
@@ -200,7 +219,10 @@ class ApiService {
         request.files.add(await http.MultipartFile.fromPath('image', imagePath));
       }
       
-      final streamedResponse = await request.send();
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('Connection timeout. Is the backend running at ${ApiConstants.baseUrl}?'),
+      );
       final response = await http.Response.fromStream(streamedResponse);
       
       if (response.statusCode == 200) {
@@ -214,11 +236,28 @@ class ApiService {
           message: 'OTP sent',
         );
       } else {
-        final error = jsonDecode(response.body) as Map<String, dynamic>;
-        throw Exception(error['message'] ?? 'Registration failed');
+        final String message = _parseErrorMessage(response.body, 'Registration failed');
+        throw Exception(message);
       }
+    } on TimeoutException catch (e) {
+      throw Exception('Registration failed: ${e.message}');
     } catch (e) {
-      throw Exception('Registration failed: ${e.toString()}');
+      final msg = e.toString();
+      if (msg.contains('Connection refused') || msg.contains('Failed host lookup') || msg.contains('SocketException')) {
+        throw Exception('Cannot reach server. Ensure Spring backend is running (mvn spring-boot:run) and try again.');
+      }
+      throw Exception('Registration failed: $msg');
+    }
+  }
+  
+  /// Parse error message from API response body
+  String _parseErrorMessage(String body, String fallback) {
+    if (body.isEmpty) return fallback;
+    try {
+      final error = jsonDecode(body) as Map<String, dynamic>;
+      return error['message'] as String? ?? fallback;
+    } catch (_) {
+      return fallback;
     }
   }
   

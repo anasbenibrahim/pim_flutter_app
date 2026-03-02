@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../bloc/social_feed_bloc.dart';
+import '../../data/constants/post_categories.dart';
+import '../../data/models/post_model.dart';
+import '../../data/models/reaction_model.dart';
 import '../../data/services/social_api_service.dart';
 import '../widgets/reaction_widget.dart';
 import '../../../../core/routes/app_routes.dart';
@@ -12,28 +16,105 @@ const Color _indigo = Color(0xFF022F40);
 class SocialFeedPage extends StatelessWidget {
   const SocialFeedPage({Key? key}) : super(key: key);
 
+  static Map<String, int> _reactionsMap(List<ReactionModel>? list) {
+    if (list == null) return {};
+    return {for (final r in list) r.reactionType: r.count};
+  }
+
+  static String? _userReaction(List<ReactionModel>? list) {
+    if (list == null) return null;
+    final reacted = list.where((r) => r.userReacted).toList();
+    return reacted.isNotEmpty ? reacted.first.reactionType : null;
+  }
+
+  void _showFilterBottomSheet(BuildContext context) {
+    final bloc = context.read<SocialFeedBloc>();
+    final currentCategory = bloc.state is SocialFeedLoaded
+        ? (bloc.state as SocialFeedLoaded).currentCategory
+        : null;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Filter by category',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: _indigo,
+              ),
+            ),
+            const SizedBox(height: 16),
+            // All option
+            _FilterChip(
+              label: 'All',
+              isSelected: currentCategory == null,
+              onTap: () {
+                bloc.add(FilterByCategory(null));
+                Navigator.pop(ctx);
+              },
+            ),
+            const SizedBox(height: 8),
+            ...postCategories.map((cat) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _FilterChip(
+                label: cat,
+                isSelected: currentCategory == cat,
+                onTap: () {
+                  bloc.add(FilterByCategory(cat));
+                  Navigator.pop(ctx);
+                },
+              ),
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => SocialFeedBloc(SocialApiService())..add(LoadFeed()),
-      child: Scaffold(
-        backgroundColor: _linen,
-        appBar: AppBar(
-          title: const Text('Recovery Network', style: TextStyle(fontWeight: FontWeight.bold)),
+      child: Builder(
+        builder: (ctx) => Scaffold(
           backgroundColor: _linen,
-          foregroundColor: _indigo,
-          elevation: 0,
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.filter_list, color: _sapphire),
-              onPressed: () {
-                // Future: Filter bottom sheet based on PostCategory mapping
-              },
-            ),
-          ],
-        ),
-        body: BlocBuilder<SocialFeedBloc, SocialFeedState>(
+          appBar: AppBar(
+            title: const Text('Recovery Network', style: TextStyle(fontWeight: FontWeight.bold)),
+            backgroundColor: _linen,
+            foregroundColor: _indigo,
+            elevation: 0,
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: Icon(Icons.tune_rounded, color: _sapphire, size: 24.sp),
+                onPressed: () => _showFilterBottomSheet(ctx),
+              ),
+            ],
+          ),
+          body: BlocBuilder<SocialFeedBloc, SocialFeedState>(
           builder: (context, state) {
             if (state is SocialFeedLoading) {
               return const Center(child: CircularProgressIndicator());
@@ -48,7 +129,7 @@ class SocialFeedPage extends StatelessWidget {
                   context.read<SocialFeedBloc>().add(RefreshFeed());
                 },
                 child: ListView.separated(
-                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 80, top: 8),
+                  padding: EdgeInsets.only(left: 16, right: 16, bottom: 120.h, top: 8),
                   itemCount: state.posts.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
@@ -65,9 +146,9 @@ class SocialFeedPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         onTap: () {
                           Navigator.pushNamed(
-                            context, 
+                            context,
                             AppRoutes.postDetail,
-                            arguments: post.id,
+                            arguments: post,
                           );
                         },
                         child: Padding(
@@ -80,7 +161,7 @@ class SocialFeedPage extends StatelessWidget {
                                   CircleAvatar(
                                     radius: 22,
                                     backgroundColor: _linen,
-                                    child: Text(post.moodEmoji, style: const TextStyle(fontSize: 22)),
+                                    backgroundImage: const AssetImage('assets/images/avatar.png'),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -129,7 +210,8 @@ class SocialFeedPage extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   ReactionWidget(
-                                    reactions: {}, // Would come from PostModel if fetched
+                                    reactions: _reactionsMap(state.postReactions[post.id]),
+                                    currentUserReaction: _userReaction(state.postReactions[post.id]),
                                     onReact: (type) {
                                       context.read<SocialFeedBloc>().add(ToggleReactionEvent(post.id, type));
                                     },
@@ -163,18 +245,82 @@ class SocialFeedPage extends StatelessWidget {
           },
         ),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.pushNamed(context, AppRoutes.createPost).then((_) {
-              // Refresh feed when popping back
-              context.read<SocialFeedBloc>().add(RefreshFeed());
-            });
+          onPressed: () async {
+            final result = await Navigator.pushNamed(ctx, AppRoutes.createPost);
+            if (!ctx.mounted) return;
+            if (result is PostModel) {
+              ctx.read<SocialFeedBloc>().add(PostCreated(result));
+            } else if (result != null) {
+              ctx.read<SocialFeedBloc>().add(RefreshFeed());
+            }
           },
           backgroundColor: _sapphire,
           elevation: 4,
           icon: const Icon(Icons.edit, color: Colors.white),
-          label: const Text('Share', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          label: const Text('POST', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ),
+        floatingActionButtonLocation: _FabAboveNavLocation(),
         ),
       ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: isSelected ? _sapphire : _sapphire.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              if (isSelected)
+                Icon(Icons.check_rounded, color: Colors.white, size: 20.sp),
+              if (isSelected) const SizedBox(width: 12),
+              Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  color: isSelected ? Colors.white : _indigo,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Positions the FAB above the bottom navigation bar with adequate spacing.
+class _FabAboveNavLocation extends FloatingActionButtonLocation {
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry geometry) {
+    final bottom = 90.0 + 16.0; // Space for nav bar + padding
+    final right = 16.0;
+    return Offset(
+      geometry.scaffoldSize.width - geometry.floatingActionButtonSize.width - right,
+      geometry.scaffoldSize.height - geometry.floatingActionButtonSize.height - bottom,
     );
   }
 }

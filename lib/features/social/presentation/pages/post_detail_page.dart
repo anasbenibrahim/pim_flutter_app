@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../bloc/post_detail_bloc.dart';
+import '../../data/models/post_model.dart';
 import '../../data/services/social_api_service.dart';
 
 const Color _sapphire = Color(0xFF0D6078);
@@ -9,15 +11,20 @@ const Color _indigo = Color(0xFF022F40);
 
 class PostDetailPage extends StatelessWidget {
   final int postId;
-  const PostDetailPage({Key? key, required this.postId}) : super(key: key);
+  final PostModel? initialPost;
+  const PostDetailPage({Key? key, required this.postId, this.initialPost}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => PostDetailBloc(SocialApiService())..add(LoadPostDetail(postId)),
+      create: (context) => PostDetailBloc(SocialApiService())..add(LoadPostDetail(postId, initialPost: initialPost)),
       child: Scaffold(
         backgroundColor: _linen,
         appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new_rounded, color: _indigo, size: 20.sp),
+            onPressed: () => Navigator.pop(context),
+          ),
           title: const Text('Post', style: TextStyle(fontWeight: FontWeight.bold)),
           backgroundColor: _linen,
           foregroundColor: _indigo,
@@ -34,10 +41,11 @@ class PostDetailPage extends StatelessWidget {
                   } else if (state is PostDetailError) {
                     return Center(child: Text('Error: ${state.message}'));
                   } else if (state is PostDetailLoaded) {
+                    final post = state.post;
                     return ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
-                        // Post Header Mock
+                        // Post content
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
@@ -45,9 +53,59 @@ class PostDetailPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: _sapphire.withOpacity(0.1)),
                           ),
-                          child: Text(
-                            "Wait, post details should be passed or fetched. (Currently mocked in bloc)",
-                            style: TextStyle(color: Colors.grey[400]),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 22,
+                                    backgroundColor: _linen,
+                                    backgroundImage: const AssetImage('assets/images/avatar.png'),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(post.pseudonym, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: _indigo)),
+                                            const SizedBox(width: 8),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: _sapphire.withOpacity(0.1),
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Text(
+                                                post.authorRole.toUpperCase(),
+                                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _sapphire),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(post.category, style: TextStyle(color: Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w500)),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    "${post.createdAt.hour}:${post.createdAt.minute.toString().padLeft(2, '0')}",
+                                    style: TextStyle(color: Colors.grey[500], fontSize: 12, fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(post.content, style: const TextStyle(fontSize: 15, color: _indigo, height: 1.4)),
+                              if (post.mediaUrl != null) ...[
+                                const SizedBox(height: 12),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(post.mediaUrl!),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -68,9 +126,9 @@ class PostDetailPage extends StatelessWidget {
                                 Row(
                                   children: [
                                     CircleAvatar(
-                                      radius: 14, 
+                                      radius: 14,
                                       backgroundColor: _linen,
-                                      child: const Icon(Icons.person, size: 16, color: _sapphire),
+                                      backgroundImage: const AssetImage('assets/images/avatar.png'),
                                     ),
                                     const SizedBox(width: 12),
                                     Text(c.pseudonym, style: const TextStyle(fontWeight: FontWeight.bold, color: _indigo, fontSize: 15)),

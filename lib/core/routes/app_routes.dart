@@ -17,6 +17,7 @@ import '../../features/onboarding/pages/onboarding_wrapper_page.dart';
 import '../../features/welcome/pages/welcome_carousel_page.dart';
 import '../../features/assessment/assessment_page.dart';
 import '../../features/notifications/pages/notifications_page.dart';
+import '../../features/social/data/models/post_model.dart';
 import '../../features/social/presentation/pages/social_feed_page.dart';
 import '../../features/social/presentation/pages/create_post_page.dart';
 import '../../features/social/presentation/pages/post_detail_page.dart';
@@ -128,9 +129,12 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const CreatePostPage());
         
       case postDetail:
-        final postId = settings.arguments as int;
+        final post = settings.arguments;
         return MaterialPageRoute(
-          builder: (_) => PostDetailPage(postId: postId),
+          builder: (_) => PostDetailPage(
+            postId: post is PostModel ? post.id : post as int,
+            initialPost: post is PostModel ? post : null,
+          ),
         );
       
       default:

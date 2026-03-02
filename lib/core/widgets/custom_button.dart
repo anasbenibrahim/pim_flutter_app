@@ -31,7 +31,7 @@ class CustomButton extends StatelessWidget {
           onTap: isLoading 
             ? null 
             : () async {
-                if (await Vibration.hasVibrator() ?? false) {
+                if (await Vibration.hasVibrator()) {
                   Vibration.vibrate(duration: 15, amplitude: 128);
                 }
                 onPressed?.call();

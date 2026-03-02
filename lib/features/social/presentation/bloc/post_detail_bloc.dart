@@ -8,7 +8,8 @@ import '../../data/services/social_websocket_service.dart';
 abstract class PostDetailEvent {}
 class LoadPostDetail extends PostDetailEvent {
   final int postId;
-  LoadPostDetail(this.postId);
+  final PostModel? initialPost;
+  LoadPostDetail(this.postId, {this.initialPost});
 }
 class AddCommentEvent extends PostDetailEvent {
   final String content;
@@ -49,18 +50,14 @@ class PostDetailBloc extends Bloc<PostDetailEvent, PostDetailState> {
       emit(PostDetailLoading());
       try {
         _currentPostId = event.postId;
-        
-        // Note: In real app, you might want to fetch single post + comments.
-        // Assuming post is passed via router or we just fetch comments.
-        // To keep it simple, we'll just use a mock post or fetch from feed if needed,
-        // but let's assume we just fetch comments for the post ID here.
-        final comments = await _apiService.getComments(event.postId);
-        
-        // Mock post just for structure. If API had getPostById, we'd call it.
-        // For now, assume it's loaded from UI. We will only manage comments mostly.
-        _currentPost = PostModel(
-            id: event.postId, content: "Loading from feed...", category: "VICTORY", moodEmoji: "HAPPY", pseudonym: "User", status: "APPROVED", authorRole: "USER", createdAt: DateTime.now()
-        );
+
+        final postFuture = event.initialPost != null
+            ? Future.value(event.initialPost!)
+            : _apiService.getPostById(event.postId);
+        final commentsFuture = _apiService.getComments(event.postId);
+
+        _currentPost = await postFuture;
+        final comments = await commentsFuture;
 
         _wsService.connect(event.postId);
         emit(PostDetailLoaded(_currentPost!, comments));

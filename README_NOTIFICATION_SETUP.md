@@ -60,10 +60,18 @@ Flutter App (Patient)
 > **Important :** Chaque développeur doit mettre **son adresse IP locale** (IPv4 de la carte réseau physique, pas VMware).
 
 ### Trouver votre IP :
+**Windows :**
 ```powershell
 ipconfig
 ```
 Cherchez la ligne **"Connexion au réseau local** → **Adresse IPv4**" (ex: `192.168.98.163`).
+
+**Mac / Linux :**
+```bash
+ifconfig | grep "inet " | grep -v 127.0.0.1
+# ou
+ipconfig getifaddr en0
+```
 
 ### Mettre à jour `api_constants.dart` :
 ```dart
@@ -85,13 +93,30 @@ Dans le nœud `Trigger Spring Alert`, l'URL doit pointer vers votre IP :
 
 ### Prérequis :
 - Python 3.x installé
-- Dépendances : `fastapi`, `uvicorn`, `tensorflow`, `scikit-learn`, `joblib`, `pandas`, `numpy`
+- Dépendances : `fastapi`, `uvicorn`, `scikit-learn`, `joblib`, `pandas`, `numpy` (tensorflow optionnel)
 
-```powershell
-pip install fastapi uvicorn tensorflow scikit-learn joblib pandas numpy
+**Mac / Linux :**
+```bash
+pip3 install -r requirements.txt
+# ou
+pip3 install fastapi uvicorn scikit-learn joblib pandas numpy
 ```
 
+**Windows :**
+```powershell
+pip install fastapi uvicorn scikit-learn joblib pandas numpy
+```
+
+> **Note :** TensorFlow est optionnel. Sur Mac avec Python 3.14+, utilisez les dépendances sans tensorflow. Le ML service fonctionne avec scikit-learn seul.
+
 ### Lancer le service :
+**Mac / Linux :**
+```bash
+cd ~/Documents/PIM   # ou votre chemin vers le projet PIM
+python3 ml_service.py --port 8001
+```
+
+**Windows :**
 ```powershell
 cd c:\Users\omaym\AndroidProjects\pim
 py ml_service.py --port 8001
@@ -135,18 +160,23 @@ Le service sera accessible sur `http://0.0.0.0:8001`.
 
 > Ngrok crée un tunnel HTTPS public vers votre n8n local.
 
+### Installer Ngrok (Mac) :
+```bash
+brew install ngrok
+```
+
 ### Compte Ngrok :
 - URL fixe utilisée : `https://ghostily-dashy-palmira.ngrok-free.dev`
 - Cette URL est configurée dans `risk_assessment_service.dart` et doit pointer vers **votre tunnel personnel** si vous utilisez votre propre compte.
 
 ### Lancer Ngrok :
-```powershell
+```bash
 ngrok http 5678
 ```
 Assurez-vous que la session est active avant de lancer des tests.
 
 Pour utiliser l'URL **fixe** (ngrok free tier ne garantit pas une URL fixe) :
-```powershell
+```bash
 ngrok http --domain=ghostily-dashy-palmira.ngrok-free.dev 5678
 ```
 
@@ -155,7 +185,7 @@ ngrok http --domain=ghostily-dashy-palmira.ngrok-free.dev 5678
 ## ⚙️ Étape 4 — Configurer n8n
 
 ### Lancer n8n :
-```powershell
+```bash
 npx n8n start
 ```
 Interface accessible sur `http://localhost:5678`.
@@ -291,7 +321,7 @@ final response = await http.get(
 ```
 [ ] 1. Lancer PostgreSQL
 [ ] 2. Lancer Spring Boot (pim_spring_app)
-[ ] 3. Lancer le ML Service : py ml_service.py --port 8001
+[ ] 3. Lancer le ML Service : python3 ml_service.py --port 8001
 [ ] 4. Lancer n8n : npx n8n start
 [ ] 5. Lancer Ngrok : ngrok http 5678
 [ ] 6. Vérifier que le workflow n8n est "Published"

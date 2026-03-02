@@ -37,6 +37,17 @@ class SocialApiService {
     }
   }
 
+  Future<PostModel> getPostById(int postId) async {
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.socialPosts}/$postId');
+    final response = await http.get(uri, headers: await _getHeaders());
+
+    if (response.statusCode == 200) {
+      return PostModel.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load post: ${response.statusCode}');
+    }
+  }
+
   Future<PostModel> createPost(String content, String category, String moodEmoji, {String? mediaUrl}) async {
     final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.socialPosts}');
     final body = json.encode({

@@ -7,7 +7,6 @@ import 'step1_welcome_page.dart';
 import 'step5_safecircle_page.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_event.dart';
-import '../../auth/bloc/auth_state.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/services/api_service.dart';
 

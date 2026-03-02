@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get_navigation/get_navigation.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../auth/bloc/auth_bloc.dart';

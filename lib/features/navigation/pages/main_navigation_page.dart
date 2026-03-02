@@ -63,7 +63,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             child: Row(
               children: [
                 _buildTab(context, index: 0, icon: Icons.home_rounded, label: 'Home'),
-                _buildTab(context, index: 1, icon: Icons.forum_rounded, label: 'Social'),
+                _buildTab(context, index: 1, icon: Icons.article_rounded, label: 'Social'),
                 _buildTab(context, index: 2, icon: Icons.person_rounded, label: 'Profile', profileImageUrl: profileImageUrl),
               ],
             ),

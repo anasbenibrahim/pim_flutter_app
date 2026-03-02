@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../data/constants/post_categories.dart';
 import '../../data/services/social_api_service.dart';
 
 const Color _sapphire = Color(0xFF0D6078);
@@ -20,7 +22,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
   String _selectedCategory = 'VICTORY';
   String _selectedMood = 'HAPPY';
 
-  final List<String> categories = ['VICTORY', 'STRUGGLE', 'ADVICE', 'GRATITUDE', 'QUESTION'];
+  final List<String> categories = postCategories;
   final Map<String, String> moods = {
     'HAPPY': '😊', 
     'NEUTRAL': '😐', 
@@ -35,12 +37,12 @@ class _CreatePostPageState extends State<CreatePostPage> {
     setState(() => _isLoading = true);
     
     try {
-      await _apiService.createPost(_contentController.text, _selectedCategory, _selectedMood);
+      final post = await _apiService.createPost(_contentController.text, _selectedCategory, _selectedMood);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Post submitted for moderation!'))
+          const SnackBar(content: Text('Post shared!'))
         );
-        Navigator.pop(context, true);
+        Navigator.pop(context, post);
       }
     } catch (e) {
       if (mounted) {
@@ -58,91 +60,123 @@ class _CreatePostPageState extends State<CreatePostPage> {
     return Scaffold(
       backgroundColor: _linen,
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: _indigo, size: 20.sp),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text('Share Your Journey', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: _linen,
         foregroundColor: _indigo,
         elevation: 0,
         centerTitle: true,
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _submitPost,
-            child: _isLoading 
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: _sapphire))
-                : const Text('Post', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: _sapphire)),
-          )
-        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Category Selector
-            const Text('Category', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: _indigo)),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: categories.map((cat) => ChoiceChip(
-                label: Text(cat, style: TextStyle(
-                  color: _selectedCategory == cat ? Colors.white : _sapphire,
-                  fontWeight: FontWeight.bold,
-                )),
-                selected: _selectedCategory == cat,
-                selectedColor: _sapphire,
-                backgroundColor: _sapphire.withOpacity(0.1),
-                side: BorderSide.none,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                onSelected: (selected) {
-                  if (selected) setState(() => _selectedCategory = cat);
-                },
-              )).toList(),
-            ),
-            const SizedBox(height: 20),
-            
-            // Mood Selector
-            const Text('How are you feeling?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: _indigo)),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: moods.entries.map((entry) => GestureDetector(
-                onTap: () => setState(() => _selectedMood = entry.key),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: _selectedMood == entry.key ? _sapphire.withOpacity(0.2) : Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: _selectedMood == entry.key ? _sapphire : Colors.transparent,
-                      width: 2,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Category', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: _indigo)),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: categories.map((cat) => ChoiceChip(
+                      label: Text(cat, style: TextStyle(
+                        color: _selectedCategory == cat ? Colors.white : _sapphire,
+                        fontWeight: FontWeight.bold,
+                      )),
+                      selected: _selectedCategory == cat,
+                      selectedColor: _sapphire,
+                      backgroundColor: _sapphire.withOpacity(0.1),
+                      side: BorderSide.none,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      onSelected: (selected) {
+                        if (selected) setState(() => _selectedCategory = cat);
+                      },
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text('How are you feeling?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: _indigo)),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: moods.entries.map((entry) => GestureDetector(
+                      onTap: () => setState(() => _selectedMood = entry.key),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: _selectedMood == entry.key ? _sapphire.withOpacity(0.2) : Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: _selectedMood == entry.key ? _sapphire : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                        child: Text(entry.value, style: const TextStyle(fontSize: 28)),
+                      ),
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: _contentController,
+                    maxLines: 10,
+                    maxLength: 2000,
+                    style: const TextStyle(color: _indigo, fontSize: 16),
+                    decoration: InputDecoration(
+                      hintText: "What's on your mind? Everything here is anonymous and safe.",
+                      hintStyle: TextStyle(color: _indigo.withOpacity(0.5)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.all(20),
                     ),
                   ),
-                  child: Text(entry.value, style: const TextStyle(fontSize: 28)),
-                ),
-              )).toList(),
-            ),
-            const SizedBox(height: 24),
-            
-            // Content Input
-            TextField(
-              controller: _contentController,
-              maxLines: 10,
-              maxLength: 2000,
-              style: const TextStyle(color: _indigo, fontSize: 16),
-              decoration: InputDecoration(
-                hintText: "What's on your mind? Everything here is anonymous and safe.",
-                hintStyle: TextStyle(color: _indigo.withOpacity(0.5)),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.all(20),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          // Post button at bottom - matches FAB style
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _submitPost,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _sapphire,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 4,
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.edit, color: Colors.white, size: 20),
+                            const SizedBox(width: 8),
+                            const Text('POST', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
