@@ -9,6 +9,7 @@ import '../models/user_role.dart';
 import '../models/objectif_model.dart';
 import '../models/mood_type.dart';
 import '../models/weekly_achievement_model.dart';
+import '../models/achievement_badge.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -661,5 +662,24 @@ class ApiService {
       }
       throw Exception(message);
     }
+  }
+
+  // Stubs for objectifs/badges features (not yet in backend)
+  Future<List<ObjectifModel>> getObjectifs() async => [];
+  Future<void> createObjectif({required DateTime objectifDate, required dynamic mood, required bool consumed, String? notes}) async {}
+  Future<void> deleteObjectif(int id) async {}
+  Future<WeeklyAchievementModel> getWeeklyAchievement({required String weekStart}) async {
+    final start = DateTime.parse(weekStart);
+    final end = start.add(const Duration(days: 6));
+    return WeeklyAchievementModel(
+      badge: AchievementBadge.champion,
+      badgeLabel: 'Champion',
+      badgeDescription: 'No data yet',
+      weekStart: start,
+      weekEnd: end,
+      abstinentDays: 0,
+      consumedDays: 0,
+      totalDaysWithData: 0,
+    );
   }
 }

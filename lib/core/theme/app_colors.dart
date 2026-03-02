@@ -29,6 +29,7 @@ class AppColors {
   // Common Colors
   static const Color error = Color(0xFFF9623E);
   static const Color success = Color(0xFF46C67D);
+  static const Color warning = Color(0xFFF8C929);
   
   // Theme-aware tokens
   static Color getBackgroundColor(BuildContext context) => Theme.of(context).colorScheme.background;

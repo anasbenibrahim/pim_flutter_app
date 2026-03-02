@@ -136,12 +136,6 @@ class AppRoutes {
             initialPost: post is PostModel ? post : null,
           ),
         );
-      
-      case objectifs:
-        return MaterialPageRoute(builder: (_) => const ObjectifsListPage());
-
-      case myBadges:
-        return MaterialPageRoute(builder: (_) => const MyBadgesPage());
 
       default:
         return MaterialPageRoute(

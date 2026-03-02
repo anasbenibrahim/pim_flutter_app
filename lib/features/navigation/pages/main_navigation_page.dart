@@ -5,7 +5,6 @@ import '../../../core/constants/api_constants.dart';
 import '../../home/pages/home_page.dart';
 import '../../social/presentation/pages/social_feed_page.dart';
 import '../../profile/pages/profile_page.dart';
-import '../../objectifs/pages/objectifs_list_page.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart';
 
@@ -36,8 +35,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         String? profileImageUrl;
-        final isPatient = state is AuthAuthenticated &&
-            state.user.role == UserRole.patient;
         if (state is AuthAuthenticated) {
           profileImageUrl = state.user.profileImageUrl;
         }
@@ -71,9 +68,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               ],
             ),
           ),
-        ),
-      );
-    },
+        );
+      },
     );
   }
 

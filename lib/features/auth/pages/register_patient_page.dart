@@ -24,6 +24,7 @@ class RegisterPatientPage extends StatefulWidget {
 }
 
 class _RegisterPatientPageState extends State<RegisterPatientPage> {
+  final _formKey = GlobalKey<FormState>();
   final _formKeyStep1 = GlobalKey<FormState>();
   final _formKeyStep2 = GlobalKey<FormState>();
   final _emailController = TextEditingController();
